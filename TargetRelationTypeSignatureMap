@@ -1,0 +1,5 @@
+PERSON	PERSON	/people/person/children	/people/person/parents	/people/person/sibling_s
+PERSON	LOCATION	/people/person/nationality	/people/person/place_of_birth	/people/deceased_person/place_of_death
+PERSON	OTHER	/people/person/religion	/people/person/ethnicity	/people/person/languages	/people/person/age	/people/person/date_of_birth	/people/deceased_person/cause_of_death
+ORGANIZATION	PERSON	/organization/organization/board_members	/organization/organization/founders
+ORGANIZATION	LOCATION	/organization/organization/locations	/organization/organization/headquarters
