@@ -76,7 +76,7 @@ public class RunMultiModelDistantSupervision {
 		MultiModelDistantSupervision ds = new MultiModelDistantSupervision(ai,paths,sigList,rm,nec,newNegativeExampleCollection);
 		FigerTypeUtils.init();
 		//init type signature relation map
-		TypeSignatureRelationMap.init(arguments.get(4));
+		TypeSignatureRelationMap.init(arguments.get(5));
 		ds.run(kb,c);
 		FigerTypeUtils.close();
 	}
