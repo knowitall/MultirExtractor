@@ -164,7 +164,7 @@ public class MultiModelManualEvaluation {
 					List<Pair<Argument,Argument>> sententialInstances = sig.generateSententialInstances(arguments, sentence);
 					for(Pair<Argument,Argument> p : sententialInstances){
 						Pair<Triple<String,Double,Double>,Map<Integer,Map<Integer,Double>>> extrResult = 
-						de.extractFromSententialInstanceWithAllFeatureScoresIgnoreNA(p.first, p.second, sentence, doc);
+						de.extractFromSententialInstanceWithAllFeatureScores(p.first, p.second, sentence, doc);
 						if(extrResult != null){
 							Triple<String,Double,Double> extrScoreTripe = extrResult.first;
 							Map<Integer,Double> featureScores = extrResult.second.get(rel2RelIdMap.get(extrResult.first.first));

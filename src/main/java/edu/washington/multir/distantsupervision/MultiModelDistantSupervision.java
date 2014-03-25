@@ -111,12 +111,12 @@ public class MultiModelDistantSupervision {
 				}
 				DistantSupervision.writeDistantSupervisionAnnotations(documentPositiveExamples,dsWriter);
 				DistantSupervision.writeNegativeExampleAnnotations(nec.filter(documentNegativeExamples,documentPositiveExamples,kb,sentences),dsWriter);
-				count++;
-				if( count % 1000 == 0){
-					long endms = System.currentTimeMillis();
-					System.out.println(count + " documents processed");
-					System.out.println("Time took = " + (endms-startms));
-				}
+			}
+			count++;
+			if( count % 1000 == 0){
+				long endms = System.currentTimeMillis();
+				System.out.println(count + " documents processed");
+				System.out.println("Time took = " + (endms-startms));
 			}
 		}
 		
