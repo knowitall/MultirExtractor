@@ -90,6 +90,28 @@ public class ManualEvaluation {
 		Corpus c = new Corpus(testCorpusDatabasePath,cis,true);
 		DocumentExtractor de = new DocumentExtractor(multirModelPath,fg,ai,sig);
 		
+		//if corpus object is full corpus, we may specify to look at train or test
+		//partition of it based on a input file representing the names of the test documents
+		if(arguments.size() == 6){
+			String corpusSetting = arguments.get(4);
+			String pathToTestDocumentFile = arguments.get(5);
+			
+			if(!corpusSetting.equals("train") && !corpusSetting.equals("test")){
+				throw new IllegalArgumentException("This argument must be train or test");
+			}
+			File f = new File(pathToTestDocumentFile);
+			if(!f.exists() || !f.isFile()){
+				throw new IllegalArgumentException("File at " + pathToTestDocumentFile + " does not exist or is not a file");
+			}
+			
+			if(corpusSetting.equals("train")){
+				c.setCorpusToTrain(pathToTestDocumentFile);
+			}
+			else{
+				c.setCorpusToTest(pathToTestDocumentFile);
+			}
+		}
+		
 		Map<String,Integer> ft2ftIdMap = de.getMapping().getFt2ftId();
 		for(String f : ft2ftIdMap.keySet()){
 			Integer k = ft2ftIdMap.get(f);
@@ -304,7 +326,7 @@ public class ManualEvaluation {
 
 	private static List<Extraction> getExtractions(Corpus c,
 			ArgumentIdentification ai, SententialInstanceGeneration sig,
-			DocumentExtractor de) throws SQLException {
+			DocumentExtractor de) throws SQLException, IOException {
 		List<Extraction> extrs = new ArrayList<Extraction>();
 		Iterator<Annotation> docs = c.getDocumentIterator();
 		while(docs.hasNext()){

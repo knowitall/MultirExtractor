@@ -23,6 +23,8 @@ import edu.washington.multir.argumentidentification.PersonCountrySententialInsta
 import edu.washington.multir.argumentidentification.RelationMatching;
 import edu.washington.multir.argumentidentification.SententialInstanceGeneration;
 import edu.washington.multir.corpus.Corpus;
+import edu.washington.multir.corpus.CorpusInformationSpecification.SentDocNameInformation;
+import edu.washington.multir.corpus.CorpusInformationSpecification.SentDocNameInformation.SentDocName;
 import edu.washington.multir.corpus.CorpusInformationSpecification.SentGlobalIDInformation.SentGlobalID;
 import edu.washington.multir.data.Argument;
 import edu.washington.multir.data.KBArgument;
@@ -56,6 +58,7 @@ public class DistantSupervision {
 		while(di.hasNext()){
 			Annotation d = di.next();
 			List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
+
 			List<NegativeAnnotation> documentNegativeExamples = new ArrayList<>();
 			List<Pair<Triple<KBArgument,KBArgument,String>,Integer>> documentPositiveExamples = new ArrayList<>();
 			for(CoreMap sentence : sentences){

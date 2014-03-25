@@ -1,5 +1,6 @@
 package edu.washington.multir.development;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
@@ -72,6 +73,29 @@ public class RunMultiModelDistantSupervision {
 		Corpus c = new Corpus(arguments.get(0),cis,true);
 		KnowledgeBase kb = new KnowledgeBase(arguments.get(1),arguments.get(2),arguments.get(3));
 		Boolean newNegativeExampleCollection = Boolean.parseBoolean(arguments.get(4));
+		
+		
+		//if corpus object is full corpus, we may specify to look at train or test
+		//partition of it based on a input file representing the names of the test documents
+		if(arguments.size() == 8){
+			String corpusSetting = arguments.get(6);
+			String pathToTestDocumentFile = arguments.get(7);
+			
+			if(!corpusSetting.equals("train") && !corpusSetting.equals("test")){
+				throw new IllegalArgumentException("This argument must be train or test");
+			}
+			File f = new File(pathToTestDocumentFile);
+			if(!f.exists() || !f.isFile()){
+				throw new IllegalArgumentException("File at " + pathToTestDocumentFile + " does not exist or is not a file");
+			}
+			
+			if(corpusSetting.equals("train")){
+				c.setCorpusToTrain(pathToTestDocumentFile);
+			}
+			else{
+				c.setCorpusToTest(pathToTestDocumentFile);
+			}
+		}
 		
 		MultiModelDistantSupervision ds = new MultiModelDistantSupervision(ai,paths,sigList,rm,nec,newNegativeExampleCollection);
 		FigerTypeUtils.init();

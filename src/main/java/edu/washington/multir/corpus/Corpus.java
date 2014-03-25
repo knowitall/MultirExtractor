@@ -37,6 +37,10 @@ public class Corpus {
 	private static String documentColumnName = "DOCNAME";
 	private static String sentIDColumnName = "SENTID";
 	
+	private boolean train = false;
+	private boolean test = false;
+	private String testDocumentName = null;
+	
 	public Corpus(String name, CorpusInformationSpecification cis, boolean load) throws SQLException{
 	  this.cis = cis;
       cd = load ? CorpusDatabase.loadCorpusDatabase(name) : CorpusDatabase.newCorpusDatabase(name,getSentenceTableSQLSpecification(), getDocumentTableSQLSpecification());
@@ -186,6 +190,7 @@ public class Corpus {
 	private class CachingDocumentIterator implements Iterator<Annotation>{
     	private ResultSet documents;
     	private List<Annotation> cachedDocuments;
+    	private Set<String> documentsToIgnore;
     	
     	private static final int CACHED_LIMIT = 1000;
     	
@@ -194,8 +199,16 @@ public class Corpus {
     		List<String> docNames = new ArrayList<String>();
     		while((i < CACHED_LIMIT) && documents.next()){
     			String docName = documents.getString(documentColumnName);
-    			docNames.add(docName);
-    			i++;
+    			if(documentsToIgnore!=null){
+    				if(!documentsToIgnore.contains(docName)){
+    	    			docNames.add(docName);
+    	    			i++;
+    				}
+    			}
+    			else{
+	    			docNames.add(docName);
+	    			i++;
+    			}
     		}
     		if(i == 0){
     			return false;
@@ -209,6 +222,19 @@ public class Corpus {
     	public CachingDocumentIterator() throws SQLException{
     		documents = cd.getDocumentRows();
     		cachedDocuments = new ArrayList<Annotation>();
+    	}
+    	
+    	public CachingDocumentIterator(boolean train, String testDocumentFile) throws SQLException, IOException{
+    		Set<String> testDocumentNames = getDocumentsFromFile(testDocumentFile);
+    		if(train){
+        		documents = cd.getDocumentRows();
+    			documentsToIgnore =testDocumentNames;
+        		cachedDocuments = new ArrayList<Annotation>();
+    		}
+    		else{
+    			documents = cd.getDocumentRows(documentColumnName, new ArrayList<String>(testDocumentNames));
+        		cachedDocuments = new ArrayList<Annotation>();
+    		}
     	}
 		@Override
 		public boolean hasNext() {
@@ -251,22 +277,72 @@ public class Corpus {
 
 		@Override
 		public void remove() {
-		}    
+		}
+		
+		
+		private Set<String> getDocumentsFromFile(String documentFile) throws IOException{
+			Set<String> documentNames = new HashSet<String>();
+			BufferedReader br = new BufferedReader(new FileReader(new File(documentFile)));
+			String nextLine;
+			while((nextLine = br.readLine())!=null){
+				documentNames.add(formatValueForComparison(nextLine.trim()));
+			}
+			br.close();
+			return documentNames;
+		}
+		
+
 	}
 	
-    public Iterator<Annotation> getDocumentIterator() throws SQLException{
-    	return new CachingDocumentIterator();
+    public Iterator<Annotation> getDocumentIterator() throws SQLException, IOException{
+    	if(train){
+    		return getTrainDocumentIterator(testDocumentName);
+    	}
+    	else if (test){
+    		return getTestDocumentIterator(testDocumentName);
+    	}
+    	else{
+        	return new CachingDocumentIterator();    		
+    	}
+    }
+    
+    /**
+     * Only selects rows corresponding to the documents in the testDocumentFile
+     * @param testDocumentFile
+     * @return
+     * @throws SQLException
+     * @throws IOException 
+     */
+    private Iterator<Annotation> getTestDocumentIterator(String testDocumentFile) throws SQLException, IOException{
+    	return new CachingDocumentIterator(false,testDocumentFile);
+    }
+    
+    /**
+     * Ignores all documents specified in the argumet testDocumentFile
+     * @param testDocumentFile
+     * @return
+     * @throws SQLException
+     * @throws IOException 
+     */
+    private Iterator<Annotation> getTrainDocumentIterator(String testDocumentFile) throws SQLException, IOException{
+    	return new CachingDocumentIterator(true,testDocumentFile);
     }
     
 
     //formatValue adds important Derby DB parsing data to strings
     //for batch insertion
-    private static String formatValue(String s){
+    private static String formatValueForInset(String s){
     	StringBuilder sb = new StringBuilder();
     	
     	sb.append(s.replaceAll("%", "%%").replaceAll("_", "__"));
     	sb.insert(0,"%");
     	sb.append("%");
+    	return sb.toString();
+    }
+    
+    private static String formatValueForComparison(String s){
+    	StringBuilder sb = new StringBuilder();  	
+    	sb.append(s.replaceAll("%", "%%").replaceAll("_", "__"));
     	return sb.toString();
     }
     
@@ -345,7 +421,7 @@ public class Corpus {
 
 						// add first columns from meta.sentences file
 						for (String metaLineValue : metaLineValues) {
-							newLine.append(formatValue(metaLineValue));
+							newLine.append(formatValueForInset(metaLineValue));
 							newLine.append("_");
 						}
 
@@ -360,7 +436,7 @@ public class Corpus {
 							if (splitValues.length > 1) {
 								values = splitValues[1];
 							}
-							newLine.append(formatValue(values));
+							newLine.append(formatValueForInset(values));
 							newLine.append("_");
 							sentLineIteratorIndex++;
 						}
@@ -376,7 +452,7 @@ public class Corpus {
 							if (splitValues.length > 1) {
 								values = splitValues[1];
 							}
-							newLine.append(formatValue(values));
+							newLine.append(formatValueForInset(values));
 							newLine.append("_");
 							tokenLineIteratorIndex++;
 						}
@@ -409,7 +485,7 @@ public class Corpus {
 						String docName = metaLineValues[1];
 						Integer currentDocId = Integer.parseInt(metaLineValues[0]);
 						StringBuilder documentLine = new StringBuilder();
-						documentLine.append(formatValue(docName));
+						documentLine.append(formatValueForInset(docName));
 						documentLine.append("_");
 						
 						int documentLineIteratorIndex = 0;
@@ -434,11 +510,11 @@ public class Corpus {
 							}
 							diReader.reset();
 							if(values.length()>0){
-								documentLine.append(formatValue(values.substring(0, values.length()-1).toString()));
+								documentLine.append(formatValueForInset(values.substring(0, values.length()-1).toString()));
 								documentLine.append("_");
 							}
 							else{
-								documentLine.append(formatValue("NULL"));
+								documentLine.append(formatValueForInset("NULL"));
 								documentLine.append("_");
 							}
 							documentLineIteratorIndex++;
@@ -582,5 +658,39 @@ public class Corpus {
 			}
 		}
 		return sentIdToAnnotationsMap;
+	}
+	
+
+	/**
+	 * Used to set the documentIterator to iterate over all the 
+	 * documents except those specified in the testDocumentName
+	 * @param testDocumentName
+	 */
+	public void setCorpusToTrain(String testDocumentName){
+		train = true;
+		test = false;
+		this.testDocumentName = testDocumentName;
+	}
+	
+	
+	/**
+	 * Used to set the documentIterator to only iterate
+	 * over the documents in testDocumentName
+	 * @param testDocumentName
+	 */
+	public void setCorpusToTest(String testDocumentName){
+		train = false;
+		test = true;
+		this.testDocumentName = testDocumentName;
+	}
+	
+	/**
+	 * Use to set the documentIterator to behave as normal
+	 * and iterate over all documents
+	 */
+	public void setCorpusToDefault(){
+		train = false;
+		test = false;
+		testDocumentName = null;
 	}
 }
