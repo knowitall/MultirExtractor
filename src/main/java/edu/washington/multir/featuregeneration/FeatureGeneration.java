@@ -4,11 +4,15 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,153 +28,147 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Pair;
 import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
+import edu.washington.multir.corpus.CorpusInformationSpecification.SentGlobalIDInformation.SentGlobalID;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNELAndCoref;
 import edu.washington.multir.util.BufferedIOUtils;
 
 public class FeatureGeneration {
 	
 	private FeatureGenerator fg;
-	private Corpus c;
-	private static final int TRAINING_INSTANCES_IN_MEMORY_CONSTANT = 5000;
 	public FeatureGeneration(FeatureGenerator fg){
 		this.fg = fg;
 	}
 	
-	private static ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-	
-	public void run(String dsFileName, String featureFileName, Corpus c, CorpusInformationSpecification cis) throws FileNotFoundException, IOException, SQLException, InterruptedException, ExecutionException{
-    	long start = System.currentTimeMillis();
-    	this.c = c;
-    	int lines =0;
-		//initialize variables
-		BufferedReader in;
-		BufferedWriter bw;
-		in = BufferedIOUtils.getBufferedReader(new File(dsFileName));
-		bw = BufferedIOUtils.getBufferedWriter(new File(featureFileName));
-
-		String nextLine = in.readLine();
-		List<SententialArgumentPair> saps = new ArrayList<>();
-		int count =0;
-		while(nextLine != null){
-			SententialArgumentPair sap = SententialArgumentPair.parseSAP(nextLine);
-			boolean mergeSap = false;
-			if(saps.size()>0){
-				if(saps.get(saps.size()-1).matchesSAP(sap)){
-					mergeSap = true;
-				}
-			}
-			if(mergeSap){
-				saps.get(saps.size()-1).mergeSAP(sap);
-			}
-			else{
-				//check if sap size is large enough
-				if((saps.size() != 0) && (saps.size() % TRAINING_INSTANCES_IN_MEMORY_CONSTANT == 0)){
-					//process saps
-//					List<Future<List<String>>> futures = new ArrayList<>();
-//					List<List<SententialArgumentPair>> sapSplits = new ArrayList<>();
-//					int sapCurr = 0;
-//					for(int i =1; i < Runtime.getRuntime().availableProcessors(); i++){
-//						List<SententialArgumentPair> sapSplit = new ArrayList<>();
-//						int sapMax = sapCurr+(saps.size()/Runtime.getRuntime().availableProcessors());
-//						if(i == (Runtime.getRuntime().availableProcessors()-1)){
-//							sapMax = saps.size();
-//						}
-//						sapSplit = saps.subList(sapCurr, sapMax);
-//						sapSplits.add(sapSplit);
-//						sapCurr = sapMax;
-//					}
-//					for(int i =1 ; i < Runtime.getRuntime().availableProcessors(); i++){
-//						futures.add(service.submit(new ProcessSapRunnable(sapSplits.get(i-1),new Corpus("NELAndCorefTrain-Chunked",cis,true))));
-//					}
-//					
-//					
-//					for(Future<List<String>> f : futures){
-//						List<String> feats = f.get();
-//						for(String feat : feats){
-//							bw.write(feat);
-//						}
-//					}
-					
-					
-					processSaps(saps,bw);
-					
-					
-					saps = new ArrayList<>();
-				}
-				saps.add(sap);
-			}			
-			nextLine = in.readLine();
-			lines ++;
-			if(lines % TRAINING_INSTANCES_IN_MEMORY_CONSTANT == 0){
-				System.out.println("Lines read = " + lines);
-			}
-		}
-		processSaps(saps,bw);
-		bw.close();
-		in.close();
+	public void run(List<String> dsFileNames, List<String> featureFileNames, Corpus c, CorpusInformationSpecification cis) throws FileNotFoundException, IOException, SQLException, InterruptedException, ExecutionException{
 		
+		long originalStart = System.currentTimeMillis();
+    	long start = System.currentTimeMillis();
+		//initialize variables
+    	
+    	List<SententialArgumentPair> saps = getSaps(dsFileNames,featureFileNames);
     	long end = System.currentTimeMillis();
-    	System.out.println("Feature Generation took " + (end-start) + " millisseconds");
+    	System.out.println("Sentential Argument Pair collection took " + (end-start) + "milliseconds");
+    	
+    	//get map from SentID to Sap
+    	start = System.currentTimeMillis();
+    	Map<Integer,List<SententialArgumentPair>> sapMap = new HashMap<>();
+    	for(SententialArgumentPair sap : saps){
+    		Integer id = sap.sentID;
+    		if(sapMap.containsKey(id)){
+    			sapMap.get(id).add(sap);
+    		}
+    		else{
+    			List<SententialArgumentPair> sameIdSaps = new ArrayList<>();
+    			sameIdSaps.add(sap);
+    			sapMap.put(id,sameIdSaps);
+    		}
+    	}
+    	end = System.currentTimeMillis();
+    	System.out.println("Map from sentence ids to saps created in " + (end-start) + "milliseconds");
+    	
+    	//initialize feature Writers
+    	Map<String,BufferedWriter> writerMap = new HashMap<>();
+    	for(int i =0; i < dsFileNames.size(); i++){
+    		String dsFileName = dsFileNames.get(i);
+    		String featureFileName = featureFileNames.get(i);
+    		BufferedWriter bw= new BufferedWriter(new FileWriter(new File(featureFileName)));
+    		writerMap.put(dsFileName, bw);
+    	}
+    	
+    	//iterate over corpus
+    	Iterator<Annotation> di = c.getDocumentIterator();
+    	int docCount =0;
+    	start = System.currentTimeMillis();
+    	while(di.hasNext()){
+    		Annotation doc = di.next();
+    		List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
+    		for(CoreMap sentence: sentences){
+    			Integer currSentID = sentence.get(SentGlobalID.class);
+    			if(sapMap.containsKey(currSentID)){
+    				List<SententialArgumentPair> sentenceSaps = sapMap.get(currSentID);
+    				writeFeatures(sentenceSaps,doc,sentence,writerMap);
+    			}
+    		}
+    		docCount++;
+    		if(docCount % 100000 == 0){
+    			end = System.currentTimeMillis();
+    			System.out.println(docCount + " documents processed in " + (end-start) + "milliseconds");
+    			start = System.currentTimeMillis();
+    		}
+    	}
     	
     	
-    	service.shutdown();
+    	//close writers
+    	for(String key : writerMap.keySet()){
+    		BufferedWriter bw = writerMap.get(key);
+    		bw.close();
+    	}
+		
+    	end = System.currentTimeMillis();
+    	System.out.println("Feature Generation took " + (end-originalStart) + " millisseconds");
+    	
 	}
 
-	private void processSaps(List<SententialArgumentPair> saps,
-			BufferedWriter bw) throws SQLException, IOException {
+	private void writeFeatures(List<SententialArgumentPair> currentSaps,
+			Annotation doc, CoreMap sentence,
+			Map<String, BufferedWriter> writerMap) throws IOException {
 		
-		Map<Integer,Pair<CoreMap,Annotation>> sentAnnotationMap = new HashMap<>();
-		Set<Integer> sentIds = new HashSet<Integer>();
-		for(SententialArgumentPair sap: saps){
-			sentIds.add(sap.sentID);
-		}
-		List<Integer> sentIdList = new ArrayList<Integer>(sentIds);
-		int count = sentIds.size() / 1000;
-		for(int i =0; i <= count; i++){
-			int startIndex = 1000*i;
-			int endIndex = Math.min(startIndex + 1000,sentIdList.size());
-			Map<Integer,Pair<CoreMap,Annotation>> smallSentAnnotationMap = c.getAnnotationPairsForEachSentence(
-					new HashSet<Integer>(sentIdList.subList(startIndex, endIndex)));
-			sentAnnotationMap.putAll(smallSentAnnotationMap);
-			System.out.println(endIndex + " sentences collected");
-		}
-		
-		for(SententialArgumentPair sap : saps){
-			Pair<CoreMap,Annotation> senAnnoPair = sentAnnotationMap.get(sap.sentID);
+		for(SententialArgumentPair sap : currentSaps){
+			BufferedWriter bw = writerMap.get(sap.partitionID);
 			List<String> features = fg.generateFeatures(sap.arg1Offsets.first,sap.arg1Offsets.second
-					,sap.arg2Offsets.first,sap.arg2Offsets.second,sap.arg1ID,sap.arg2ID,senAnnoPair.first,senAnnoPair.second);
+					,sap.arg2Offsets.first,sap.arg2Offsets.second,sap.arg1ID,sap.arg2ID,sentence,doc);
 			bw.write(makeFeatureString(sap,features)+"\n");
 		}
-		
 	}
+
+	private List<SententialArgumentPair> getSaps(List<String> dsFileNames,
+			List<String> featureFileNames) throws FileNotFoundException, IOException {
+    	List<SententialArgumentPair> saps = new ArrayList<>();
+    	
+    	for(int i =0; i < dsFileNames.size(); i++){
+    		
+    		String dsFileName = dsFileNames.get(i);
+    		String featureFileName = featureFileNames.get(i);
+			BufferedReader in;
+			BufferedWriter bw;
+			in = BufferedIOUtils.getBufferedReader(new File(dsFileName));
+			bw = BufferedIOUtils.getBufferedWriter(new File(featureFileName));
 	
-	private  List<String> processSapsToStrings(List<SententialArgumentPair> saps, Corpus corp) throws SQLException, IOException {
+			String nextLine = in.readLine();
+			List<SententialArgumentPair> currentSaps = new ArrayList<>();
+			while(nextLine != null){
+				SententialArgumentPair sap = SententialArgumentPair.parseSAP(nextLine);
+				sap.setPartitionId(dsFileName);
+				boolean mergeSap = false;
+				if(currentSaps.size()>0){
+					if(currentSaps.get(currentSaps.size()-1).matchesSAP(sap)){
+						mergeSap = true;
+					}
+				}
+				if(mergeSap){
+					currentSaps.get(currentSaps.size()-1).mergeSAP(sap);
+				}
+				else{
+					currentSaps.add(sap);
+				}			
+				nextLine = in.readLine();
+			}
+			bw.close();
+			in.close();
+			saps.addAll(currentSaps);
+    	}
 		
-		List<String> featureStrings = new ArrayList<String>();
-		Map<Integer,Pair<CoreMap,Annotation>> sentAnnotationMap = new HashMap<>();
-		Set<Integer> sentIds = new HashSet<Integer>();
-		for(SententialArgumentPair sap: saps){
-			sentIds.add(sap.sentID);
-		}
-		List<Integer> sentIdList = new ArrayList<Integer>(sentIds);
-		int count = sentIds.size() / 1000;
-		for(int i =0; i <= count; i++){
-			int startIndex = 1000*i;
-			int endIndex = Math.min(startIndex + 1000,sentIdList.size());
-			Map<Integer,Pair<CoreMap,Annotation>> smallSentAnnotationMap = corp.getAnnotationPairsForEachSentence(
-					new HashSet<Integer>(sentIdList.subList(startIndex, endIndex)));
-			sentAnnotationMap.putAll(smallSentAnnotationMap);
-			System.out.println(endIndex + " sentences collected");
-		}
-		
-		for(SententialArgumentPair sap : saps){
-			
-			Pair<CoreMap,Annotation> senAnnoPair = sentAnnotationMap.get(sap.sentID);
-			List<String> features = fg.generateFeatures(sap.arg1Offsets.first,sap.arg1Offsets.second
-					,sap.arg2Offsets.first,sap.arg2Offsets.second,sap.arg1ID,sap.arg2ID,senAnnoPair.first,senAnnoPair.second);
-			featureStrings.add(makeFeatureString(sap,features)+"\n");
-		}
-		return featureStrings;
+    	//sort saps by global sentence id
+    	Collections.sort(saps,new Comparator<SententialArgumentPair>(){
+			@Override
+			public int compare(SententialArgumentPair arg0,
+					SententialArgumentPair arg1) {
+				return (arg0.sentID - arg1.sentID);
+			}
+    		
+    	});
+    	
+		return saps;
 	}
 
 	private   String makeFeatureString(SententialArgumentPair sap,
@@ -194,18 +192,6 @@ public class FeatureGeneration {
 		}
 		return sb.toString().trim();
 	}
-
-	private  Map<Integer, Pair<CoreMap,Annotation>> getSentAnnotationsMap(
-			List<SententialArgumentPair> saps) throws SQLException {
-		
-		Set<Integer> sentIds = new HashSet<Integer>();
-		
-		for(SententialArgumentPair sap : saps){
-			sentIds.add(sap.sentID);
-		}
-		
-		return c.getAnnotationPairsForEachSentence(sentIds);
-	}
 	
 	public static class SententialArgumentPair{
 		
@@ -215,6 +201,7 @@ public class FeatureGeneration {
 		private List<String> relations;
 		private String arg1ID;
 		private String arg2ID;
+		private String partitionID;
 		
 		private SententialArgumentPair(Integer sentID, Pair<Integer,Integer> arg1Offsets,
 										Pair<Integer,Integer> arg2Offsets, String relation,
@@ -281,55 +268,28 @@ public class FeatureGeneration {
 		public Integer getSentID(){return sentID;}
 		public Pair<Integer,Integer> getArg1Offsets(){return arg1Offsets;}
 		public Pair<Integer,Integer> getArg2Offsets(){return arg2Offsets;}
-	}
-	
-	
-	
-	public static void main(String[] args) throws SQLException{
-		CorpusInformationSpecification cis = new DefaultCorpusInformationSpecificationWithNELAndCoref();
-		FeatureGenerator fg = new FeatureGeneratorDraft3();
-		Corpus c = new Corpus("NELAndCorefTrain-Chunked",cis,true);
-		List<Integer> sentIds = new ArrayList<Integer>();
-		sentIds.add(8082);
-		Map<Integer, Pair<CoreMap,Annotation>> annotationMap = c.getAnnotationPairsForEachSentence(new HashSet<Integer>(sentIds));
 		
-		Pair<CoreMap,Annotation> p = annotationMap.get(8082);
-		CoreMap sentence = p.first;
-		Annotation doc = p.second;
-		
-		Integer Arg1StartOffset = 0;
-		Integer Arg1EndOffset = 12;
-		Integer Arg2StartOffset = 63;
-		Integer Arg2EndOffset = 69;
-		
-		List<String> features = fg.generateFeatures(Arg1StartOffset,Arg1EndOffset
-					,Arg2StartOffset,Arg2EndOffset,null,null,sentence,doc);
-			
-		String senText = sentence.get(CoreAnnotations.TextAnnotation.class);
-		System.out.println(senText);
-		System.out.println("----------------------------------------------------\nFeatures:");
-		for(String f : features){
-			System.out.println(f);
-		}
-		System.out.println("------------------------------------------------------\n\n");
-		
-	}
-	
-	private  class ProcessSapRunnable implements Callable<List<String>>{
-		private List<SententialArgumentPair> saps;
-		private Corpus corp;
-		
-		public ProcessSapRunnable(List<SententialArgumentPair> saps, Corpus corp){
-			this.saps = saps;
-			this.corp = corp;
-		}
-
 		@Override
-		public List<String> call() throws Exception {
-			return processSapsToStrings(saps,corp);
+		public String toString(){
+			StringBuilder sb = new StringBuilder();
+			sb.append(arg1ID + "\t"+ arg1Offsets.first+":"+arg1Offsets.second + "\t"+ arg2ID + "\t" +  arg2Offsets.first+":"+arg2Offsets.second + "\t");
+			int count =0;
+			for(String relation : relations){
+				if(count == 0) sb.append(relation);
+				else sb.append("&&"+relation);
+				count++;
+			}
+			sb.append("\t" + sentID);
+			String partitionString = null;
+			if(partitionID !=null){
+				partitionString = partitionID;
+			}
+			sb.append("\t" + partitionString);
+			return sb.toString().trim();
 		}
-
-
+		
+		public void setPartitionId(String id){
+			partitionID = id;
+		}
 	}
-
 }
