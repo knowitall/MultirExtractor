@@ -63,6 +63,7 @@ public class RunMultiModelDistantSupervision {
 		for(String arg: args){
 			arguments.add(arg);
 		}
+		
 		CorpusInformationSpecification cis = CLIUtils.loadCorpusInformationSpecification(arguments);
 		List<SententialInstanceGeneration> sigList = CLIUtils.loadSententialInstanceGenerationList(arguments);
 		List<String> paths = CLIUtils.loadFilePaths(arguments);

@@ -82,6 +82,8 @@ public class RunDistantSupervision {
 		String dsFileName = arguments.get(1);
 		KnowledgeBase kb = new KnowledgeBase(arguments.get(2),arguments.get(3),arguments.get(4));
 
+		//if corpus object is full corpus, we may specify to look at train or test
+		//partition of it based on a input file representing the names of the test documents
 		if(arguments.size() == 7){
 			String corpusSetting = arguments.get(5);
 			String pathToTestDocumentFile = arguments.get(6);
