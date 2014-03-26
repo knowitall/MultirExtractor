@@ -84,6 +84,30 @@ public class MultiModelManualEvaluation {
 		
 		//load test corpus
 		Corpus c = new Corpus(testCorpusDatabasePath,cis,true);
+		
+		//if corpus object is full corpus, we may specify to look at train or test
+		//partition of it based on a input file representing the names of the test documents
+		if(arguments.size() == 5){
+			String corpusSetting = arguments.get(3);
+			String pathToTestDocumentFile = arguments.get(4);
+			
+			if(!corpusSetting.equals("train") && !corpusSetting.equals("test")){
+				throw new IllegalArgumentException("This argument must be train or test");
+			}
+			File f = new File(pathToTestDocumentFile);
+			if(!f.exists() || !f.isFile()){
+				throw new IllegalArgumentException("File at " + pathToTestDocumentFile + " does not exist or is not a file");
+			}
+			
+			if(corpusSetting.equals("train")){
+				c.setCorpusToTrain(pathToTestDocumentFile);
+			}
+			else{
+				c.setCorpusToTest(pathToTestDocumentFile);
+			}
+		}
+		
+		
 
 		if(fg instanceof DefaultFeatureGeneratorWithFIGER | fg instanceof DefaultFeatureGeneratorConcatFIGER | fg instanceof DefaultFeatureGeneratorIndepFIGER){
 			FigerTypeUtils.init();
@@ -135,7 +159,7 @@ public class MultiModelManualEvaluation {
 	}
 
 	private static List<Extraction> getMultiModelExtractions(Corpus c,
-			ArgumentIdentification ai, FeatureGenerator fg, List<SententialInstanceGeneration> sigs, List<String> modelPaths) throws SQLException {
+			ArgumentIdentification ai, FeatureGenerator fg, List<SententialInstanceGeneration> sigs, List<String> modelPaths) throws SQLException, IOException {
 		
 		List<Extraction> extrs = new ArrayList<Extraction>();
 		for(int i =0; i < sigs.size(); i++){

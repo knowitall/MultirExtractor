@@ -1,5 +1,6 @@
 package edu.washington.multir.development;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -75,11 +76,33 @@ public class RunDistantSupervision {
 		SententialInstanceGeneration sig = CLIUtils.loadSententialInformationGeneration(arguments);
 		RelationMatching rm = CLIUtils.loadRelationMatching(arguments);
 		NegativeExampleCollection nec = CLIUtils.loadNegativeExampleCollection(arguments);
+		
 
 		Corpus c = new Corpus(arguments.get(0),cis,true);
 		String dsFileName = arguments.get(1);
 		KnowledgeBase kb = new KnowledgeBase(arguments.get(2),arguments.get(3),arguments.get(4));
-		
+
+		//if corpus object is full corpus, we may specify to look at train or test
+		//partition of it based on a input file representing the names of the test documents
+		if(arguments.size() == 7){
+			String corpusSetting = arguments.get(5);
+			String pathToTestDocumentFile = arguments.get(6);
+			
+			if(!corpusSetting.equals("train") && !corpusSetting.equals("test")){
+				throw new IllegalArgumentException("This argument must be train or test");
+			}
+			File f = new File(pathToTestDocumentFile);
+			if(!f.exists() || !f.isFile()){
+				throw new IllegalArgumentException("File at " + pathToTestDocumentFile + " does not exist or is not a file");
+			}
+			
+			if(corpusSetting.equals("train")){
+				c.setCorpusToTrain(pathToTestDocumentFile);
+			}
+			else{
+				c.setCorpusToTest(pathToTestDocumentFile);
+			}
+		}
 		DistantSupervision ds = new DistantSupervision(ai,sig,rm,nec);
 		FigerTypeUtils.init();
 		ds.run(dsFileName,kb,c);

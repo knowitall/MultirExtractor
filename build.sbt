@@ -1,4 +1,4 @@
-name := "MultirSystem"
+name := "MultirExtractor"
 
 version := "0.1"
 
