@@ -63,12 +63,19 @@ public class RunFeatureGeneration {
 		}
 		CorpusInformationSpecification cis = CLIUtils.loadCorpusInformationSpecification(arguments);
 		FeatureGenerator fg = CLIUtils.loadFeatureGenerator(arguments);
+		List<String> featureFilePaths = CLIUtils.loadFeatureFilePaths(arguments);
+		List<String> DSFilePaths = CLIUtils.loadDSFilePaths(arguments);
+		
+		if(featureFilePaths.size()!=DSFilePaths.size()){
+			throw new IllegalArgumentException("size of feature files must equal size of ds files");
+		}
+
 		
 		Corpus c = new Corpus(arguments.get(0),cis,true);
 		
 		FeatureGeneration featureGeneration = new FeatureGeneration(fg);
 		FigerTypeUtils.init();
-		featureGeneration.run(arguments.get(1),arguments.get(2),c,cis);
+		featureGeneration.run(DSFilePaths,featureFilePaths,c,cis);
 		FigerTypeUtils.close();
 	}
 }

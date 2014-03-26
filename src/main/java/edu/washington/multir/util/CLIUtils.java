@@ -473,36 +473,6 @@ public class CLIUtils {
 		return nec;
 	}
 
-	public static List<String> loadFilePaths(List<String> arguments) throws ParseException {
-		Options options = new Options();
-		OptionBuilder.hasArgs(10);
-		OptionBuilder.withDescription("List of All Paths for Each Argument Identification Class");
-		options.addOption(OptionBuilder.create("files"));
-		
-		List<Integer> relevantArgIndices = getContiguousArgumentsForMultiValueOptions(arguments,"files");
-		List<String> relevantArguments = new ArrayList<String>();
-		List<String> remainingArguments = new ArrayList<String>();
-		for(Integer i: relevantArgIndices){
-			relevantArguments.add(arguments.get(i));
-		}
-		for(Integer i =0; i < arguments.size(); i++){
-			if(!relevantArgIndices.contains(i)){
-				remainingArguments.add(arguments.get(i));
-			}
-		}
-		CommandLineParser parser = new BasicParser();
-		CommandLine cmd = parser.parse(options, relevantArguments.toArray(new String[relevantArguments.size()]));
-		
-		List<String> pathList = new ArrayList<>();
-		
-		String[] paths = cmd.getOptionValues("files");
-		for(String path: paths){
-			pathList.add(path);
-		}
-		removeUsedArguments(remainingArguments,arguments);
-		return pathList;
-	}
-
 	public static List<ArgumentIdentification> loadArgumentIdentificationList(
 			List<String> arguments) throws ClassNotFoundException, ParseException,
 			NoSuchMethodException, SecurityException, IllegalAccessException, 
@@ -591,6 +561,46 @@ public class CLIUtils {
 		return sigList;
 	}
 	
+	public static List<String> loadFilePaths(List<String> arguments, String optionName) throws ParseException {
+		Options options = new Options();
+		OptionBuilder.hasArgs(10);
+		OptionBuilder.withDescription("List of All Paths for Each Argument Identification Class");
+		options.addOption(OptionBuilder.create(optionName));
+		
+		List<Integer> relevantArgIndices = getContiguousArgumentsForMultiValueOptions(arguments,optionName);
+		List<String> relevantArguments = new ArrayList<String>();
+		List<String> remainingArguments = new ArrayList<String>();
+		for(Integer i: relevantArgIndices){
+			relevantArguments.add(arguments.get(i));
+		}
+		for(Integer i =0; i < arguments.size(); i++){
+			if(!relevantArgIndices.contains(i)){
+				remainingArguments.add(arguments.get(i));
+			}
+		}
+		CommandLineParser parser = new BasicParser();
+		CommandLine cmd = parser.parse(options, relevantArguments.toArray(new String[relevantArguments.size()]));
+		
+		List<String> pathList = new ArrayList<>();
+		
+		String[] paths = cmd.getOptionValues(optionName);
+		for(String path: paths){
+			pathList.add(path);
+		}
+		removeUsedArguments(remainingArguments,arguments);
+		return pathList;
+	}
 	
+	public static List<String> loadFilePaths(List<String> arguments) throws ParseException{
+		return loadFilePaths(arguments,"files");
+	}
+
+	public static List<String> loadFeatureFilePaths(List<String> arguments) throws ParseException{
+		return loadFilePaths(arguments,"featureFiles");
+	}
+	
+	public static List<String> loadDSFilePaths(List<String> arguments) throws ParseException{
+		return loadFilePaths(arguments,"dsFiles");
+	}
 
 }
