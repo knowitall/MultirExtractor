@@ -32,6 +32,7 @@ import edu.washington.multir.data.Extraction;
 import edu.washington.multir.data.ExtractionAnnotation;
 import edu.washington.multir.featuregeneration.FeatureGenerator;
 import edu.washington.multir.sententialextraction.DocumentExtractor;
+import edu.washington.multir.util.ModelUtils;
 
 public class GetSententialArgumentPairFeatureScores {
 	
@@ -117,11 +118,7 @@ public class GetSententialArgumentPairFeatureScores {
 		Corpus c = new Corpus(testCorpusDatabasePath,cis,true);
 		DocumentExtractor de = new DocumentExtractor(multirModelPath,fg,ai,sig);
 		
-		Map<String,Integer> ft2ftIdMap = de.getMapping().getFt2ftId();
-		for(String f : ft2ftIdMap.keySet()){
-			Integer k = ft2ftIdMap.get(f);
-			ftID2ftMap.put(k, f);
-		}
+		Map<Integer,String> ft2ftIdMap = ModelUtils.getFeatureIDToFeatureMap(de.getMapping());
 		
 		Argument arg1 = new Argument("Mike Eruzione",171,184);
 		Argument arg2 = new Argument("United States",201,214);
