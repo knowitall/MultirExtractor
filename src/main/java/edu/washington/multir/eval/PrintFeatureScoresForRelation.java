@@ -16,6 +16,7 @@ import edu.washington.multir.multiralgorithm.DenseVector;
 import edu.washington.multir.multiralgorithm.Mappings;
 import edu.washington.multir.multiralgorithm.Model;
 import edu.washington.multir.multiralgorithm.Parameters;
+import edu.washington.multir.util.ModelUtils;
 
 public class PrintFeatureScoresForRelation {
 	
@@ -41,12 +42,7 @@ public class PrintFeatureScoresForRelation {
 		
 		Integer relKey = m.getRelationID(rel, false);
 		
-		Map<Integer,String> idToFeatureMap = new HashMap<Integer,String>();
-		for(String feature: m.getFt2ftId().keySet()){
-			Integer key = m.getFt2ftId().get(feature);
-			idToFeatureMap.put(key,feature);
-		}
-		
+		Map<Integer,String> idToFeatureMap = ModelUtils.getFeatureIDToFeatureMap(m);
 		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputFile)));
 		
 		
