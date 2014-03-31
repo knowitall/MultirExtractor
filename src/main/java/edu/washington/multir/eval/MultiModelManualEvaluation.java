@@ -41,7 +41,9 @@ import edu.washington.multir.featuregeneration.DefaultFeatureGeneratorWithFIGER;
 import edu.washington.multir.featuregeneration.FeatureGenerator;
 import edu.washington.multir.sententialextraction.DocumentExtractor;
 import edu.washington.multir.util.CLIUtils;
+import edu.washington.multir.util.EvaluationUtils;
 import edu.washington.multir.util.FigerTypeUtils;
+import edu.washington.multir.util.ModelUtils;
 
 /**
  * This class is designed for a more accurate evaluation of 
@@ -80,7 +82,7 @@ public class MultiModelManualEvaluation {
 		String annotationsInputFilePath = arguments.get(1);
 		String evaluationRelationsFilePath = arguments.get(2);
 		
-		loadTargetRelations(evaluationRelationsFilePath);
+		targetRelations = EvaluationUtils.loadTargetRelations(evaluationRelationsFilePath);
 		
 		//load test corpus
 		Corpus c = new Corpus(testCorpusDatabasePath,cis,true);
@@ -119,13 +121,13 @@ public class MultiModelManualEvaluation {
 		System.out.println("Got Extractions in " + (end-start));
 		
 		start = end;
-		List<ExtractionAnnotation> annotations = loadAnnotations(annotationsInputFilePath);
+		List<ExtractionAnnotation> annotations = EvaluationUtils.loadAnnotations(annotationsInputFilePath);
 		end = System.currentTimeMillis();
 		System.out.println("Got Annotations in " + (end-start));
 
 		start = end;
 
-		List<Extraction> diffExtractions = getDiff(extractions,annotations);
+		List<Extraction> diffExtractions = EvaluationUtils.getDiff(extractions,annotations);
 		end = System.currentTimeMillis();
 		System.out.println("Got diff in " + (end-start));
 
@@ -145,12 +147,13 @@ public class MultiModelManualEvaluation {
 		if(diffExtractions.size() > 0){
 			//output diff
 			String diffOutputName = annotationsInputFilePath + ".diff";
-			writeExtractions(diffExtractions,diffOutputName);
+			EvaluationUtils.writeExtractions(diffExtractions,diffOutputName);
 			throw new IllegalStateException("inputAnnotations do not include all of the extractions, tag the diff at "
 					+ diffOutputName + " and merge with annotations");
 		}
 		else{
-			eval(extractions,annotations);
+			EvaluationUtils.eval(extractions,annotations,targetRelations);
+			EvaluationUtils.relByRelEvaluation(extractions,annotations,targetRelations);
 		}
 		
 		if(fg instanceof DefaultFeatureGeneratorWithFIGER | fg instanceof DefaultFeatureGeneratorConcatFIGER | fg instanceof DefaultFeatureGeneratorIndepFIGER){
@@ -167,14 +170,9 @@ public class MultiModelManualEvaluation {
 			SententialInstanceGeneration sig = sigs.get(i);
 			String modelPath = modelPaths.get(i);
 			DocumentExtractor de = new DocumentExtractor(modelPath,fg,ai,sig);
-			
-			Map<Integer,String> ftID2ftMap = new HashMap<Integer,String>();
-			Map<String,Integer> ft2ftIdMap = de.getMapping().getFt2ftId();
+
 			Map<String,Integer> rel2RelIdMap =de.getMapping().getRel2RelID();
-			for(String f : ft2ftIdMap.keySet()){
-				Integer k = ft2ftIdMap.get(f);
-				ftID2ftMap.put(k, f);
-			}
+			Map<Integer,String> ftID2ftMap = ModelUtils.getFeatureIDToFeatureMap(de.getMapping());
 			
 			int docCount = 0;
 			while(docs.hasNext()){
@@ -193,20 +191,13 @@ public class MultiModelManualEvaluation {
 							Triple<String,Double,Double> extrScoreTripe = extrResult.first;
 							Map<Integer,Double> featureScores = extrResult.second.get(rel2RelIdMap.get(extrResult.first.first));
 							String rel = extrScoreTripe.first;
-							List<Pair<String,Double>> featureScoreList = new ArrayList<>();
-							for(Integer featureI: featureScores.keySet()){
-								String featureString = ftID2ftMap.get(featureI);
-								Double featureScore = featureScores.get(featureI);
-								Pair<String,Double> featureScorePair = new Pair<>(featureString,featureScore);
-								featureScoreList.add(featureScorePair);
-							}							
+							List<Pair<String,Double>> featureScoreList = EvaluationUtils.getFeatureScoreList(featureScores, ftID2ftMap);
 							if(targetRelations.contains(rel)){
 								if(!(rel.equals("/organization/organization/founders") && (sig instanceof FigerAndNERTypeSignaturePERPERSententialInstanceGeneration))){
 									String docName = sentence.get(SentDocName.class);
 									String senText = sentence.get(CoreAnnotations.TextAnnotation.class);
 									Integer sentNum = sentence.get(SentGlobalID.class);
 									Extraction e = new Extraction(p.first,p.second,docName,rel,sentNum,extrScoreTripe.third,senText);
-									//e.setFeatureScores(featureScores);
 									e.setFeatureScoreList(featureScoreList);
 									extrs.add(e);
 									if(verbose) logNegativeExtraction(p.first,p.second,sentence,extrResult,de,ftID2ftMap);
@@ -224,7 +215,7 @@ public class MultiModelManualEvaluation {
 				}
 			}
 		}
-		return getUniqueList(extrs);
+		return EvaluationUtils.getUniqueList(extrs);
 
 	}
 
@@ -254,186 +245,5 @@ public class MultiModelManualEvaluation {
 			}
 			
 		}
-	}
-
-	private static void loadTargetRelations(String evaluationRelationsFilePath) throws IOException {
-		BufferedReader br= new BufferedReader( new FileReader(new File(evaluationRelationsFilePath)));
-		String nextLine;
-		targetRelations = new HashSet<String>();
-		while((nextLine = br.readLine())!=null){
-			targetRelations.add(nextLine.trim());
-		}
-		
-		br.close();
-	}
-
-	private static void eval(List<Extraction> extractions,
-			List<ExtractionAnnotation> annotations) {
-		System.out.println("evaluating...");
-		
-		//sort extractions
-		Collections.sort(extractions, new Comparator<Extraction>(){
-			@Override
-			public int compare(Extraction e1, Extraction e2) {
-				return e1.getScore().compareTo(e2.getScore());
-			}
-			
-		});
-		Collections.reverse(extractions);
-		
-		List<Pair<Double,Integer>> precisionYieldValues = new ArrayList<>();
-		for(int i =1; i < extractions.size(); i++){
-			Pair<Double,Integer> pr = getPrecisionYield(extractions.subList(0, i),annotations,targetRelations,false);
-			precisionYieldValues.add(pr);
-		}
-		Pair<Double,Integer> pr = getPrecisionYield(extractions,annotations,targetRelations,true);
-		
-		System.out.println("Precision and Yield");
-		for(Pair<Double,Integer> p : precisionYieldValues){
-			System.out.println(p.first + "\t" + p.second);
-		}
-	}
-
-	private static Pair<Double, Integer> getPrecisionYield(List<Extraction> subList,
-			List<ExtractionAnnotation> annotations, Set<String> relationSet, boolean print) {
-		
-		int totalExtractions = 0;
-		int correctExtractions = 0;
-		
-		for(Extraction e : subList){
-			if(relationSet.contains(e.getRelation())){
-				totalExtractions++;
-				List<ExtractionAnnotation> matchingAnnotations = new ArrayList<>();
-				for(ExtractionAnnotation ea : annotations){
-					if(ea.getExtraction().equals(e)){
-						matchingAnnotations.add(ea);
-					}
-				}
-				if(matchingAnnotations.size() == 1){
-					ExtractionAnnotation matchedAnnotation = matchingAnnotations.get(0);
-					if(print){
-						System.out.print(e + "\t" + e.getScore());
-					}
-					if(matchedAnnotation.getLabel()){
-						correctExtractions++;
-						if(print){
-							System.out.print("\tCORRECT\n");
-						}
-					}
-					else{
-						if(print){
-							System.out.print("\tINCORRECT\n");
-						}
-					}
-					if(print){
-						System.out.println("Features:");
-						List<Pair<String,Double>> featureScoreList = e.getFeatureScoreList();
-						for(Pair<String,Double> p : featureScoreList){
-							System.out.println(p.first + "\t" + p.second);
-						}
-					}
-				}
-				else{
-					StringBuilder errorStringBuilder = new StringBuilder();
-					errorStringBuilder.append("There should be exactly 1 matching extraction in the annotation set\n");
-					errorStringBuilder.append("There are " + matchingAnnotations.size() +" and they are listed below: ");
-					for(ExtractionAnnotation ea : matchingAnnotations){
-						errorStringBuilder.append(ea.getExtraction().toString()+"\n");
-					}
-					throw new IllegalArgumentException(errorStringBuilder.toString());
-				}
-			}
-		}
-		
-		double precision = (totalExtractions == 0) ? 1.0 : ((double)correctExtractions /(double)totalExtractions);
-		Pair<Double,Integer> p = new Pair<Double,Integer>(precision,correctExtractions);
-		return p;
-	}
-
-	private static void writeExtractions(List<Extraction> diffExtractions,
-			String diffOutputName) throws IOException {
-		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(diffOutputName)));
-		for(Extraction e : diffExtractions){
-			bw.write(e.toString()+"\n");
-		}
-		bw.close();
-	}
-
-	private static List<Extraction> getDiff(List<Extraction> extractions,
-			List<ExtractionAnnotation> annotations) {
-		
-		List<Extraction> extrsNotInAnnotations = new ArrayList<Extraction>();
-		
-		
-		for(Extraction e : extractions){
-			boolean inAnnotation = false;
-			for(ExtractionAnnotation ea : annotations){
-				Extraction annoExtraction = ea.getExtraction();
-				if(annoExtraction.equals(e)){
-					inAnnotation = true;
-				}
-			}
-			if(!inAnnotation){
-				extrsNotInAnnotations.add(e);
-			}
-		}
-		
-		
-		return extrsNotInAnnotations;
-	}
-
-	private static List<ExtractionAnnotation> loadAnnotations(
-			String annotationsInputFilePath) throws IOException {
-		List<ExtractionAnnotation> extrAnnotations = new ArrayList<ExtractionAnnotation>();
-		List<Extraction> extrs = new ArrayList<Extraction>();
-		BufferedReader br = new BufferedReader(new FileReader(new File(annotationsInputFilePath)));
-		String nextLine;
-		boolean duplicates = false;
-		int lineCount =1;
-		try{
-			while((nextLine = br.readLine())!=null){
-				ExtractionAnnotation extrAnnotation = ExtractionAnnotation.deserialize(nextLine);
-				if(extrs.contains(extrAnnotation.getExtraction())){
-					System.err.println("DUPLICATE ANNOTATION: " + nextLine);
-					duplicates = true;
-				}
-				else{
-				  extrs.add(extrAnnotation.getExtraction());
-				  extrAnnotations.add(extrAnnotation);
-				}
-				lineCount++;
-			}
-		}
-		catch(Exception e){
-			System.out.println("Error at line " + lineCount);
-			throw e;
-		}
-		
-		if(duplicates){
-			br.close();
-			throw new IllegalArgumentException("Annotations file contains multiple instances of the same extraction");
-		}
-		
-		br.close();
-		return extrAnnotations;
-	}
-
-
-
-	private static List<Extraction> getUniqueList(List<Extraction> extrs) {
-		List<Extraction> uniqueList = new ArrayList<Extraction>();
-		
-		for(Extraction extr: extrs){
-			boolean unique = true;
-			for(Extraction extr1: uniqueList){
-				if(extr.equals(extr1)){
-					unique =false;
-				}
-			}
-			if(unique){
-			 uniqueList.add(extr);
-			}
-		}
-		return uniqueList;
 	}
 }
