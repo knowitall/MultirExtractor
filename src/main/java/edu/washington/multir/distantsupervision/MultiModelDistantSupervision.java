@@ -333,7 +333,7 @@ public class MultiModelDistantSupervision {
 					if( (!arg1Ids.isEmpty()) && (!arg2Ids.isEmpty())){
 						//check that no pair of entities represented by these
 						//argument share a relation:
-						List<String> trueNegativeRelations= KB.getTrueNegativeRelations(arg1Ids,arg2Ids,arg2Type,KB,targetRelations);
+						List<String> trueNegativeRelations= KB.getTrueNegativeRelations(arg1Ids,arg2Ids,KB,targetRelations);
 						String arg1Id = arg1Ids.get(0);
 						String arg2Id = arg2Ids.get(0);
 						if((!arg1Id.equals("null")) && (!arg2Id.equals("null"))){

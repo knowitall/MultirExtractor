@@ -232,7 +232,7 @@ public class KnowledgeBase {
 	 * @return
 	 */
 	public List<String> getTrueNegativeRelations(List<String> arg1Ids,
-			List<String> arg2Ids, String arg2Type, KnowledgeBase kB, List<String> targetRelations) {
+			List<String> arg2Ids, KnowledgeBase kB, List<String> targetRelations) {
 		
 		Set<String> trueNegativeRelations = new HashSet<String>();
 
