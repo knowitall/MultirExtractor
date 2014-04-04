@@ -39,6 +39,7 @@ public class KnowledgeBase {
 	private Map<String,List<String>> entityMap;
 	//map from a string representation of an entity pair to a list of their relations
 	private Map<String,List<Pair<String,String>>> entityPairRelationMap;
+
 	
 	public Map<String,List<String>> getEntityMap() {return entityMap;}
 	public Map<String,List<Pair<String,String>>> getEntityPairRelationMap() {return entityPairRelationMap;}
@@ -276,6 +277,27 @@ public class KnowledgeBase {
 		}
 		
 		return new ArrayList<>(trueNegativeRelations);
+	}
+	
+	public Map<String,List<String>> getIDToAliasMap(){
+		//map from entity id to aliases
+		Map<String,List<String>> idToAliasMap = new HashMap<>();
+		
+		for(String alias: entityMap.keySet()){
+			List<String> aliasIds = entityMap.get(alias);
+			for(String id: aliasIds){
+				if(idToAliasMap.containsKey(id)){
+					List<String> aliases = idToAliasMap.get(id);
+					aliases.add(alias);
+				}
+				else{
+					List<String> newAliasList = new ArrayList<>();
+					newAliasList.add(alias);
+					idToAliasMap.put(id, newAliasList);
+				}
+			}
+		}
+		return idToAliasMap;
 	}
 	
 //	/**

@@ -80,7 +80,8 @@ public class Argument {
 		
 		if(
 			((this.getStartOffset() > other.getStartOffset()) && (this.getEndOffset() <= other.getEndOffset())) ||
-			((this.getStartOffset() >= other.getStartOffset() && (this.getEndOffset() < other.getEndOffset())))){
+			((this.getStartOffset() >= other.getStartOffset()) && (this.getEndOffset() < other.getEndOffset())) ||
+			((this.getStartOffset() > other.getStartOffset()) && (this.getEndOffset() < other.getEndOffset()))){
 			return true;
 		}
 		return false;
