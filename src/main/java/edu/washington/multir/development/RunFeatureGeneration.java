@@ -71,7 +71,7 @@ public class RunFeatureGeneration {
 		}
 
 		
-		Corpus c = new Corpus(arguments.get(0),cis,true);
+		Corpus c = CLIUtils.loadCorpus(arguments, cis);
 		
 		FeatureGeneration featureGeneration = new FeatureGeneration(fg);
 		FigerTypeUtils.init();
