@@ -28,7 +28,7 @@ import edu.washington.multir.featuregeneration.FeatureGenerator;
 public class CLIUtils {
 	
 	
-	private static String remoteCorpusName = "jdbc:derby://porvo.cs.washington.edu:49152//scratch2/code/multir-reimplementation/MultirSystem/NELAndCorefTest";
+	private static String remoteCorpusName = "jdbc:derby://porvo.cs.washington.edu:49152//scratch2/code/multir-reimplementation/MultirSystem/FullCorpus";
 	
 	/**
 	 * Returns A CorpusInformationSpecification object using the proper 
