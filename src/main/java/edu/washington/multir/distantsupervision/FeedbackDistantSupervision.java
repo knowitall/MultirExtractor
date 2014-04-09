@@ -10,12 +10,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
@@ -41,6 +43,8 @@ import edu.washington.multir.sententialextraction.DocumentExtractor;
 import edu.washington.multir.util.CLIUtils;
 import edu.washington.multir.util.CorpusUtils;
 import edu.washington.multir.util.EvaluationUtils;
+import edu.washington.multir.util.FigerTypeUtils;
+import edu.washington.multir.util.GuidMidConversion;
 import edu.washington.multir.util.ModelUtils;
 
 public class FeedbackDistantSupervision {
@@ -49,10 +53,11 @@ public class FeedbackDistantSupervision {
 	private static final String MID_BASE = "MID";
 	private static final long SCORE_THRESHOLD = 150000000;
 	private static Map<String,List<String>> idToAliasMap = null;
+	private static boolean print = false;
 	
 	public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, ParseException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException, SQLException, IOException{
 		
-		
+		FigerTypeUtils.init();
 		//load in k partitioned models and sigs
 		List<String> arguments  = new ArrayList<String>();
 		for(String arg: args){
@@ -166,7 +171,7 @@ public class FeedbackDistantSupervision {
 //								}
 								
 								// if extraction not a true negative and score greater than threshold treat as new positive.
-								else if (!isProbablyNegative(kb,p.first,p.second,arg1Id,arg2Id,rel)){
+								else if (!isProbablyNegative(kb,p.first,p.second,arg1Id,arg2Id,rel,sentence)){
 									
 									ds.score = extrScoreTriple.third;
 									newPositiveAnnotations.add(ds);
@@ -180,12 +185,13 @@ public class FeedbackDistantSupervision {
 			if(docCount % 1000 == 0){
 				System.out.println(docCount + " docs processed");
 			}
-//			if(docCount == 30000){
+//			if(docCount == 100000){
 //				break;
 //			}
 		}
 
-		
+		FigerTypeUtils.close();
+
 		
 		//output new negatives into new DS files
 		for(String modelPath: modelPaths){
@@ -233,7 +239,7 @@ public class FeedbackDistantSupervision {
 					}
 					
 				});				
-				List<DS> topNegativeExtractions = relationSpecificDsList.subList(0, Math.max(0,(int)Math.ceil((double)relationSpecificDsList.size()/2.0)));
+				List<DS> topNegativeExtractions = relationSpecificDsList.subList(0, Math.max(0,(int)Math.ceil((double)relationSpecificDsList.size())));
 				for(DS ds : topNegativeExtractions){
 					ds.relation = "NA";
 					bw.write(getDSString(ds)+"\n");
@@ -268,14 +274,19 @@ public class FeedbackDistantSupervision {
 			}
 			
 			for(List<DS> relationSpecificDsList : relationSpecificPositiveInstances ){
-				Collections.sort(relationSpecificDsList, new Comparator<DS>(){
+
+				collapseArgumentPairs(relationSpecificDsList);
+				List<DSEntityPair> dsEntityPairs = getEntityPairs(relationSpecificDsList);
+				//group argument pairs by entity ids, and take top 10% of those mention pairs by average score
+				
+				Collections.sort(dsEntityPairs, new Comparator<DSEntityPair>(){
 
 					@Override
-					public int compare(DS arg0, DS arg1) {
-						if(arg0.score > arg1.score){
+					public int compare(DSEntityPair arg0, DSEntityPair arg1) {
+						if(arg0.avgScore > arg1.avgScore){
 							return -1;
 						}
-						else if(arg0.score < arg1.score){
+						else if(arg0.avgScore < arg1.avgScore){
 							return 1;
 						}
 						else{
@@ -283,15 +294,47 @@ public class FeedbackDistantSupervision {
 						}
 					}
 					
-				});				
-				List<DS> topPositiveExtractions = relationSpecificDsList.subList(0, Math.max(0,(int)Math.ceil((double)relationSpecificDsList.size()/10.0)));
-				collapseArgumentPairs(topPositiveExtractions);
-				for(DS ds : topPositiveExtractions){
-					bw.write(getDSString(ds)+"\n");
+				});
+				
+				List<DSEntityPair> topPositiveExtractions = dsEntityPairs.subList(0, Math.max(0,(int)Math.ceil((double)dsEntityPairs.size()/10.0)));
+				for(DSEntityPair dsEntityPair : topPositiveExtractions){
+					for(DS ds : dsEntityPair.mentions){
+					  bw.write(getDSString(ds)+"\n");
+					}
 				}		
 			}
 			bw.close();
 		}
+	}
+
+	private static List<DSEntityPair> getEntityPairs(
+			List<DS> relationSpecificDsList) {
+		
+		Map<String,List<DS>> idsToDSListMap = new HashMap<>();
+		List<DSEntityPair> dsEntityPairs = new ArrayList<>();
+		for(DS ds : relationSpecificDsList){
+			
+			String key = ds.arg1ID+":"+ds.arg2ID;
+			if(idsToDSListMap.containsKey(key)){
+				idsToDSListMap.get(key).add(ds);
+			}
+			else{
+				List<DS> newDSList = new ArrayList<>();
+				newDSList.add(ds);
+				idsToDSListMap.put(key,newDSList);
+			}
+		}
+		
+		
+		for(String key: idsToDSListMap.keySet()){
+			List<DS> dsList = idsToDSListMap.get(key);
+			String[] values = key.split(":");
+			String arg1Id = values[0];
+			String arg2Id = values[1];
+			//prevent single instance entity pairs
+			if(dsList.size()>1) dsEntityPairs.add(new DSEntityPair(arg1Id,arg2Id,dsList));
+		}
+		return dsEntityPairs;
 	}
 
 	private static void collapseArgumentPairs(List<DS> topPositiveExtractions) {
@@ -337,23 +380,13 @@ public class FeedbackDistantSupervision {
 	}
 
 	private static boolean isProbablyNegative(KnowledgeBase kb, Argument first,
-			Argument second, String arg1Id, String arg2Id, String rel) {
+			Argument second, String arg1Id, String arg2Id, String rel, CoreMap sentence) {
 
-		boolean print = false;
-		if(first.getArgName().contains("Al Gore") && second.getArgName().contains("U.S.")){
-			print = true;
-		}
-		if(first.getArgName().contains("Chakvetadze") && second.getArgName().contains("Russia")){
-			print = true;
-		}
-		if(first.getArgName().contains("Michelle Obama") && second.getArgName().contains("Chicago")){
-			print = true;
-		}
-
-		
+		if(print)System.out.println("Is Probably NEgative? for " + first.getArgName() + " " + second.getArgName());
 		
 		if((!arg1Id.startsWith("MID")) && (!arg2Id.startsWith("MID"))){
 			if(kb.hasRelationWith(arg1Id, arg2Id)){
+				if(print) System.out.println("Returning false because mids have relation");
 				return false;
 			}
 		}
@@ -387,18 +420,114 @@ public class FeedbackDistantSupervision {
 			}
 		}
 		//check strings too
-		Map<String,List<String>> entityMap = kb.getEntityMap();
+		//assume arg1 link to be true and allow arg2link to be false		
+		if(!arg1Id.startsWith("MID")){
+			List<String> arg2Names = new ArrayList<>();
+			if(!kb.getEntityMap().containsKey(second.getArgName())) {
+				if(print)System.out.println("Returning false because " + second.getArgName() + " does not have map to id in entity map");
+				return false;
+			}
+			arg2Names.add(second.getArgName());
+			List<String> arg2Aliases = idToAliasMap.get(arg2Id);
+			if(arg2Aliases!=null){
+				arg2Names.addAll(arg2Aliases);
+			}
+			List<String> arg2Ids = new ArrayList<>();
+			for(String arg2Name: arg2Names){
+				List<String> ids = kb.getEntityMap().get(arg2Name);
+				if(ids != null){
+					arg2Ids.addAll(ids);
+				}
+			}
+			if(arg2Ids.size() == 0){
+				if(print) System.out.println("Returning false because " + second.getArgName() + " does not have map to id in entity map");
+				return false;
+			}
+			
+			for(String a2Id: arg2Ids){
+				List<String> relations = kb.getRelationsBetweenArgumentIds(arg1Id, a2Id);
+				if(relations.size()>0){
+					if(print) System.out.println("Returning false because candidate pair " + arg1Id + " " + a2Id + " has relation");
+					return false;
+				}
+			}
+			
+			if(stringsSimilar(kb,arg1Id,second.getArgName(),rel)) {
+				if(print) System.out.println("Returning false becasue " + arg1Id + " has a similar string to " + second.getArgName());
+				return false;
+			}
+			if(typesDoNotMatch(kb,arg1Id,second,rel,sentence)) {
+				if(print) System.out.println("Returning false types for " + arg1Id + " do not match type of " + second.getArgName());
+				return false;
+			}
+
+		}
+		//assume arg2 link to be true and allow arg1link to be false		
+		if(!arg2Id.startsWith("MID")){
+			List<String> arg1Names = new ArrayList<>();
+			if(!kb.getEntityMap().containsKey(first.getArgName())) {
+				if(print)System.out.println("Returning false because " + first.getArgName() + " does not have map to id in entity map");
+				return false;
+			}
+			arg1Names.add(first.getArgName());
+			List<String> arg1Aliases = idToAliasMap.get(arg1Id);
+			if(arg1Aliases!=null){
+				arg1Names.addAll(arg1Aliases);
+			}
+			List<String> arg1Ids = new ArrayList<>();
+			for(String arg1Name: arg1Names){
+				List<String> ids = kb.getEntityMap().get(arg1Name);
+				if(ids != null){
+					arg1Ids.addAll(ids);
+				}
+			}
+			if(arg1Ids.size() == 0){
+				if(print)System.out.println("Returning false because " + first.getArgName() + " does not have map to id in entity map");
+				return false;
+			}
+			
+			for(String a1Id: arg1Ids){
+				List<String> relations = kb.getRelationsBetweenArgumentIds(a1Id, arg2Id);
+				if(relations.size()>0){
+					if(print) System.out.println("Returning false because candidate pair " + a1Id + " " + arg2Id + " has relation");
+					return false;
+				}
+				if(stringsSimilar(kb,a1Id,second.getArgName(),rel)) {
+					if(print) System.out.println("Returning false becasue " + a1Id + " has a similar string to " + second.getArgName());
+
+					return false;
+				}
+				if(typesDoNotMatch(kb,a1Id,second,rel,sentence)) {
+					if(print) System.out.println("Returning false types for " + a1Id + " do not match type of " + second.getArgName());
+
+					return false;
+				}
+
+			}			
+		}
+		//assume both are false
 		if(print) System.out.println(first.getArgName() +"\t" + second.getArgName());
-		if(entityMap.containsKey(first.getArgName())){
-			if(entityMap.containsKey(second.getArgName())){
-				List<String> arg1Ids = entityMap.get(first.getArgName());
-				List<String> arg2Ids = entityMap.get(second.getArgName());
+		if(kb.getEntityMap().containsKey(first.getArgName())){
+			if(kb.getEntityMap().containsKey(second.getArgName())){
+				List<String> arg1Ids = kb.getEntityMap().get(first.getArgName());
+				List<String> arg2Ids = kb.getEntityMap().get(second.getArgName());
 				if(print) System.out.println(arg1Ids.size() + " " + arg2Ids.size());
 				for(String a1Id : arg1Ids){
 					for(String a2Id: arg2Ids){
 						if(print) System.out.println("Comparing ids " + a1Id + " and " + a2Id);
 						List<String> relations = kb.getRelationsBetweenArgumentIds(a1Id,a2Id);
 						if(relations.size()>0){
+							if(print) System.out.println("Returning false because candidate pair " + a1Id + " " + a2Id + " has relation");
+							return false;
+						}
+						if(stringsSimilar(kb,a1Id,second.getArgName(),rel)) {
+							if(print) System.out.println("Returning false becasue " + a1Id + " has a similar string to " + second.getArgName());
+
+							return false;
+						}
+						if(typesDoNotMatch(kb,a1Id,second,rel,sentence)) {
+							if(print) System.out.println("Returning false types for " + a1Id + " do not match type of " + second.getArgName());
+
 							return false;
 						}
 					}
@@ -406,8 +535,118 @@ public class FeedbackDistantSupervision {
 			}
 		}
 
+		
+		if(print) System.out.println("Arg pair is probably negative");
 		return true;
 		
+	}
+
+
+
+	//if notable type matches for any a1Id rel a2 with second argument
+	private static boolean typesDoNotMatch(KnowledgeBase kb, String a1Id, Argument second, String rel, CoreMap sentence) {
+	
+		List<Pair<String,String>> rels = kb.getEntityPairRelationMap().get(a1Id);
+		List<Pair<String,String>> targetRels = new ArrayList<>();
+		
+		if(rels != null){
+			Set<String> kbFreebaseTypes = new HashSet<>();
+			for(Pair<String,String> p : rels){
+				if(p.first.equals(rel)){
+					targetRels.add(p);
+				}
+			}
+			if(targetRels.size()>0){
+				List<String> arg2Ids = new ArrayList<>();
+				for(Pair<String,String> p : targetRels){
+					arg2Ids.add(p.second);
+				}
+				
+				for(String arg2Id: arg2Ids){
+					kbFreebaseTypes.addAll(FigerTypeUtils.getFreebaseTypesFromID(GuidMidConversion.convertBackward(arg2Id)));
+				}
+				
+				String fbType = CorpusUtils.getFreebaseNotableType(second.getStartOffset(), second.getEndOffset(), sentence);
+				if(fbType != null){
+					if(!kbFreebaseTypes.contains(fbType)){
+						if(print) System.out.println("Type " + fbType + " from " + second.getArgName() + " not in " + a1Id + " relevant types");
+						return true;
+					}
+				}
+			}
+
+		}
+		
+		
+		
+		return false;
+	}
+
+	private static boolean stringsSimilar(KnowledgeBase kb,String a1Id, String argName,
+			String rel) {
+				
+		if(print)System.out.println(a1Id + " " + argName);
+		
+		List<Pair<String,String>> rels = kb.getEntityPairRelationMap().get(a1Id);
+		List<Pair<String,String>> targetRels = new ArrayList<>();
+		
+		if(rels != null){
+			for(Pair<String,String> p : rels){
+				if(p.first.equals(rel)){
+					targetRels.add(p);
+				}
+			}
+			
+			List<String> arg2Ids = new ArrayList<>();
+			for(Pair<String,String> p : targetRels){
+				arg2Ids.add(p.second);
+			}
+			
+			List<String> arg2Strings = new ArrayList<>();
+			for(String id : arg2Ids){
+				List<String> aliases = idToAliasMap.get(id);
+				for(String alias: aliases){
+					if(!arg2Strings.contains(alias)){
+						arg2Strings.add(alias);
+					}
+				}
+			}
+			
+			//if any arg2String in kb contains any token in relation string arg2 then strings are similar
+			
+			String[] argTokens = argName.split("\\s+");
+			for(String arg2String : arg2Strings){
+				for(String argToken: argTokens){
+					if(arg2String.contains(argToken)){
+						if(print)System.out.println(arg2String + " contains " + argToken);
+						return true;
+					}
+				}
+			}
+			
+			//if any token in arg2String in kb is similar enough to any token in arg2 then strings are similar
+			for(String arg2String: arg2Strings){
+				for(String arg2Token: arg2String.split("\\s+")){
+					if(arg2Token.length() >2){
+						for(String argToken: argTokens){
+							if(argToken.length()>2){
+								Integer maxLength = Math.max(arg2Token.length(), argToken.length());
+								Integer editDistance = StringUtils.getLevenshteinDistance(argToken, arg2Token);
+								Double ratio = (double)editDistance/(double)maxLength;
+								//strings are too similar
+								if(ratio <= .33){
+									if(print)System.out.println(argToken + " is too similar to  " + arg2Token + " with edit score of " + ratio);
+									return true;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if(print) System.out.println("Arguments are not similar enough");
+		return false;
 	}
 
 	private static String getWeakMid(CoreMap s, Argument arg) {
@@ -472,23 +711,6 @@ public class FeedbackDistantSupervision {
 	}
 
 	private static boolean isTrueNegative(KnowledgeBase KB, Annotation doc, CoreMap sentence, Argument arg1, Argument arg2, String extractionRel, String arg1Id, String arg2Id) {
-		
-
-		
-		boolean print = false;
-		if(arg1.getArgName().contains("Al Gore") && arg2.getArgName().contains("U.S.")){
-			print = true;
-		}
-		if(arg1.getArgName().contains("Chakvetadze") && arg2.getArgName().contains("Russia")){
-			print = true;
-		}
-		if(arg1.getArgName().contains("Michelle Obama") && arg2.getArgName().contains("Chicago")){
-			print = true;
-		}
-
-		
-		
-		
 		if(print){
 			System.out.println("arg1  = " + arg1.getArgName());
 			System.out.println("link1 = " + arg1Id);
@@ -508,19 +730,19 @@ public class FeedbackDistantSupervision {
 			}
 			
 			if(KB.hasRelationWith(arg1Id, arg2Id)){
-				if(print) System.out.println("Returning false because the entities have a relation");
+				if(print) System.out.println("Returning false for True Negative because the entities have a relation");
 				return false;
 			}
 			else{
 				if(KB.participatesInRelationAsArg1(arg1Id, extractionRel)){
-					if(isProbablyNegative(KB,arg1,arg2,arg1Id,arg2Id,extractionRel)){
-						if(print) System.out.println("Returning true because the entities have no relation and arg1 participates in extraction relation");
+					if(isProbablyNegative(KB,arg1,arg2,arg1Id,arg2Id,extractionRel,sentence)){
+						if(print) System.out.println("Returning true for True Negative because is Probably Negative rreturned true");
 						return true;
 					}
 				}
 			}
 		}
-		if(print) System.out.println("Returning false because one of the links returned null");
+		if(print) System.out.println("Returning false for True NEgative");
 		return false;
 	}
 
@@ -594,6 +816,26 @@ public class FeedbackDistantSupervision {
 		}
 		
 		
+	}
+	
+	private static class DSEntityPair{
+		private String arg1Id;
+		private String arg2Id;
+		private List<DS> mentions;
+		private double avgScore;
+		
+		
+		public DSEntityPair(String arg1Id, String arg2Id, List<DS> mentions){
+			this.arg1Id = arg1Id;
+			this.arg2Id = arg2Id;
+			this.mentions = mentions;
+			
+			double sum = 0.0;
+			for(DS mention: mentions){
+				sum += mention.score;
+			}
+			avgScore = (sum/mentions.size());
+		}
 	}
 
 

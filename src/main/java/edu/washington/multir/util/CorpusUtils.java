@@ -6,8 +6,10 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Pair;
+import edu.stanford.nlp.util.Triple;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetBeginAnnotation;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetEndAnnotation;
+import edu.washington.multir.corpus.SentFreebaseNotableTypeInformation.FreebaseNotableTypeAnnotation;
 
 public class CorpusUtils {
 	
@@ -62,6 +64,23 @@ public class CorpusUtils {
 			return null;
 		}
 		
+	}
+	
+	public static String getFreebaseNotableType(Integer charStartOffset, Integer charEndOffset, CoreMap sentence){
+		
+		Pair<Integer,Integer> tokenOffsets = getTokenOffsetsFromCharacterOffsets(charStartOffset,charEndOffset,sentence);
+		List<Triple<Pair<Integer,Integer>,String,String>> notableTypeData = sentence.get(FreebaseNotableTypeAnnotation.class);
+		
+		if(notableTypeData !=null){
+			for(Triple<Pair<Integer,Integer>,String,String> t : notableTypeData){
+				if(t.first.equals(tokenOffsets)){
+					return t.second;
+				}
+			}
+		}
+		
+		
+		return null;
 	}
 
 }
