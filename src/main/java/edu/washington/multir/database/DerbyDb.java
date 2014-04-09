@@ -21,8 +21,8 @@ public class DerbyDb {
 * @param url The URL of the database (e.g., localhost:1527://path/to/db)
      * @throws SQLException 
 */
-    public DerbyDb(String dbName) throws SQLException {
-    	if(!dbName.contains("porvo")){
+    public DerbyDb(boolean local, String dbName) throws SQLException {
+    	if(local){
 	        String connectionUrl = PROTOCOL + dbName+";create=true";
 	        try {
 	            Class.forName(DRIVER);

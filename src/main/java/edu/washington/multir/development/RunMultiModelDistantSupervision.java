@@ -71,16 +71,16 @@ public class RunMultiModelDistantSupervision {
 		RelationMatching rm = CLIUtils.loadRelationMatching(arguments);
 		NegativeExampleCollection nec = CLIUtils.loadNegativeExampleCollection(arguments);
 
-		Corpus c = CLIUtils.loadCorpus(arguments, cis);
-		KnowledgeBase kb = new KnowledgeBase(arguments.get(0),arguments.get(1),arguments.get(2));
-		Boolean newNegativeExampleCollection = Boolean.parseBoolean(arguments.get(3));
+		Corpus c = new Corpus(arguments.get(0),cis,true);
+		KnowledgeBase kb = new KnowledgeBase(arguments.get(1),arguments.get(2),arguments.get(3));
+		Boolean newNegativeExampleCollection = Boolean.parseBoolean(arguments.get(4));
 		
 		
 		//if corpus object is full corpus, we may specify to look at train or test
 		//partition of it based on a input file representing the names of the test documents
-		if(arguments.size() == 7){
-			String corpusSetting = arguments.get(5);
-			String pathToTestDocumentFile = arguments.get(6);
+		if(arguments.size() == 8){
+			String corpusSetting = arguments.get(6);
+			String pathToTestDocumentFile = arguments.get(7);
 			
 			if(!corpusSetting.equals("train") && !corpusSetting.equals("test")){
 				throw new IllegalArgumentException("This argument must be train or test");
@@ -101,7 +101,7 @@ public class RunMultiModelDistantSupervision {
 		MultiModelDistantSupervision ds = new MultiModelDistantSupervision(ai,paths,sigList,rm,nec,newNegativeExampleCollection);
 		FigerTypeUtils.init();
 		//init type signature relation map
-		TypeSignatureRelationMap.init(arguments.get(4));
+		TypeSignatureRelationMap.init(arguments.get(5));
 		ds.run(kb,c);
 		FigerTypeUtils.close();
 	}

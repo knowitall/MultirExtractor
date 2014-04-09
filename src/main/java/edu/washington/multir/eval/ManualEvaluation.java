@@ -80,21 +80,21 @@ public class ManualEvaluation {
 		SententialInstanceGeneration sig = CLIUtils.loadSententialInformationGeneration(arguments);
 		
 		
-		String multirModelPath = arguments.get(0);
-		String annotationsInputFilePath = arguments.get(1);
-		String evaluationRelationsFilePath = arguments.get(2);
+		String multirModelPath = arguments.get(1);
+		String annotationsInputFilePath = arguments.get(2);
+		String evaluationRelationsFilePath = arguments.get(3);
 		
 		targetRelations = EvaluationUtils.loadTargetRelations(evaluationRelationsFilePath);
 		
 		//load test corpus
-		Corpus c = CLIUtils.loadCorpus(arguments, cis);
+		Corpus c = new Corpus(arguments.get(0),cis,true);
 		DocumentExtractor de = new DocumentExtractor(multirModelPath,fg,ai,sig);
 		
 		//if corpus object is full corpus, we may specify to look at train or test
 		//partition of it based on a input file representing the names of the test documents
-		if(arguments.size() == 5){
-			String corpusSetting = arguments.get(3);
-			String pathToTestDocumentFile = arguments.get(4);
+		if(arguments.size() == 6){
+			String corpusSetting = arguments.get(4);
+			String pathToTestDocumentFile = arguments.get(5);
 			
 			if(!corpusSetting.equals("train") && !corpusSetting.equals("test")){
 				throw new IllegalArgumentException("This argument must be train or test");

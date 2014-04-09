@@ -35,24 +35,18 @@ public final class CorpusDatabase {
 		cachedDocumentValues = new ArrayList<List<Object>>();
 	}
 	public static CorpusDatabase loadCorpusDatabase(String name) throws SQLException{
-		//if name is not a remote name
-		if(!name.contains("porvo")){
-			File derbyDbFile = new File(name);
-			if(derbyDbFile.exists() && derbyDbFile.isDirectory()){
-				DerbyDb db = new DerbyDb(name);
-				return new CorpusDatabase(name,db);
-			}
-			else{
-				throw new IllegalArgumentException("There is no derby database directory at " + name);
-			}
+		File derbyDbFile = new File(name);
+		if(derbyDbFile.exists() && derbyDbFile.isDirectory()){
+			DerbyDb db = new DerbyDb(true,name);
+			return new CorpusDatabase(name,db);
 		}
 		else{
-			DerbyDb db = new DerbyDb(name);
+			DerbyDb db = new DerbyDb(false,name);
 			return new CorpusDatabase(name,db);
 		}
 	}
 	public static CorpusDatabase newCorpusDatabase(String name, String sentenceTableSQLSpecification, String documentTableSQLSpecification) throws SQLException{
-		DerbyDb db = new DerbyDb(name);
+		DerbyDb db = new DerbyDb(true,name);
 		deleteTable(db.connection,sentenceInformationTableName);
 		deleteTable(db.connection,documentInformationTableName);
 		createTable(db.connection,sentenceInformationTableName,sentenceTableSQLSpecification);
