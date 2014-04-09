@@ -26,7 +26,7 @@ public class NELArgumentIdentification implements ArgumentIdentification{
 
 	
 	private static NELArgumentIdentification instance = null;
-	private static final double CONFIDENCE_THRESHOLD = 0.5;
+	private static final double CONFIDENCE_THRESHOLD = 0.9;
 	private static final boolean removeRedundantArguments = true;
 	
 	private NELArgumentIdentification(){}

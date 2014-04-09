@@ -36,7 +36,7 @@ public class DefaultCorpusInformationSpecificationWithNEL extends DefaultCorpusI
 				currIndex = (group-1)*5;
 				Integer tokenStart = Integer.parseInt(nelStringInformation[currIndex]);
 				Integer tokenEnd = Integer.parseInt(nelStringInformation[currIndex+1]);
-				String entityID = nelStringInformation[currIndex+3];
+				String entityID = nelStringInformation[currIndex+3].replaceAll("_+", "_");
 				Float confidence = Float.parseFloat(nelStringInformation[currIndex+4]);
 				Pair<Integer,Integer> tokenOffsets = new Pair<>(tokenStart,tokenEnd);
 				Triple<Pair<Integer,Integer>,String,Float> nelAnnotation = new Triple<>(tokenOffsets,entityID,confidence);

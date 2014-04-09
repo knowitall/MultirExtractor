@@ -1,18 +1,10 @@
 package edu.washington.multir.eval;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -116,7 +108,7 @@ public class MultiModelManualEvaluation {
 		}
 		
 		long start = System.currentTimeMillis();
-		List<Extraction> extractions = getMultiModelExtractions(c,ai,fg,sigs,modelPaths);
+		List<Extraction> extractions = getMultiModelExtractions(c,ai,fg,sigs,modelPaths,targetRelations);
 		long end = System.currentTimeMillis();
 		System.out.println("Got Extractions in " + (end-start));
 		
@@ -161,8 +153,8 @@ public class MultiModelManualEvaluation {
 		}
 	}
 
-	private static List<Extraction> getMultiModelExtractions(Corpus c,
-			ArgumentIdentification ai, FeatureGenerator fg, List<SententialInstanceGeneration> sigs, List<String> modelPaths) throws SQLException, IOException {
+	public static List<Extraction> getMultiModelExtractions(Corpus c,
+			ArgumentIdentification ai, FeatureGenerator fg, List<SententialInstanceGeneration> sigs, List<String> modelPaths, Set<String> targetRelations) throws SQLException, IOException {
 		
 		List<Extraction> extrs = new ArrayList<Extraction>();
 		for(int i =0; i < sigs.size(); i++){

@@ -603,4 +603,9 @@ public class CLIUtils {
 		return loadFilePaths(arguments,"dsFiles");
 	}
 
+	public static List<String> loadOutputFilePaths(List<String> arguments) throws ParseException {
+		return loadFilePaths(arguments,"outputFiles");
+
+	}
+
 }
