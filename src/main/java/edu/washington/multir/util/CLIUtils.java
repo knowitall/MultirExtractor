@@ -2,6 +2,7 @@ package edu.washington.multir.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import org.apache.commons.cli.ParseException;
 import edu.washington.multir.argumentidentification.ArgumentIdentification;
 import edu.washington.multir.argumentidentification.RelationMatching;
 import edu.washington.multir.argumentidentification.SententialInstanceGeneration;
+import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
 import edu.washington.multir.corpus.CustomCorpusInformationSpecification;
 import edu.washington.multir.corpus.DocumentInformationI;
@@ -24,6 +26,9 @@ import edu.washington.multir.distantsupervision.NegativeExampleCollection;
 import edu.washington.multir.featuregeneration.FeatureGenerator;
 
 public class CLIUtils {
+	
+	
+	private static String remoteCorpusName = "jdbc:derby://porvo.cs.washington.edu:49152//scratch2/code/multir-reimplementation/MultirSystem/FullCorpus";
 	
 	/**
 	 * Returns A CorpusInformationSpecification object using the proper 
@@ -559,6 +564,37 @@ public class CLIUtils {
 		
 		
 		return sigList;
+	}
+	
+	public static Corpus loadCorpus(List<String> arguments, CorpusInformationSpecification cis) throws ParseException, SQLException{
+		Options options = new Options();
+		options.addOption("corpus",true,"Corpus Specification, remote or local");
+
+
+		List<Integer> relevantArgIndices = getContiguousArgumentsForSingleValueOptions(arguments,"corpus");
+		List<String> relevantArguments = new ArrayList<String>();
+		List<String> remainingArguments = new ArrayList<String>();
+		for(Integer i: relevantArgIndices){
+			relevantArguments.add(arguments.get(i));
+		}
+		for(Integer i =0; i < arguments.size(); i++){
+			if(!relevantArgIndices.contains(i)){
+				remainingArguments.add(arguments.get(i));
+			}
+		}
+		
+		CommandLineParser parser = new BasicParser();
+		CommandLine cmd = parser.parse(options, relevantArguments.toArray(new String[relevantArguments.size()]));
+		String corpusName = cmd.getOptionValue("corpus");
+		removeUsedArguments(remainingArguments,arguments);
+		if(corpusName.equals("remote")){
+			Corpus c = new Corpus(remoteCorpusName,cis,true);
+			return c;
+		}
+		Corpus c = new Corpus(corpusName,cis,true);
+		
+		return c;
+		
 	}
 	
 	public static List<String> loadFilePaths(List<String> arguments, String optionName) throws ParseException {

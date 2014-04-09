@@ -12,6 +12,7 @@ import java.sql.SQLException;
 public class DerbyDb {
     public static final String PROTOCOL = "jdbc:derby:";
     public static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
+    public static final String CLIENT_DRIVER = "org.apache.derby.jdbc.ClientDriver";
     protected Connection connection = null;
 
     /**
@@ -21,15 +22,27 @@ public class DerbyDb {
      * @throws SQLException 
 */
     public DerbyDb(String dbName) throws SQLException {
-        String connectionUrl = PROTOCOL + dbName+";create=true";
-        try {
-            Class.forName(DRIVER);
-            connection = DriverManager.getConnection(connectionUrl);
-        } catch (SQLException e) {
-            throw new RuntimeException("Could not open Derby DB at " + connectionUrl, e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Could not find Derby driver " + DRIVER, e);
-        }
+    	if(!dbName.contains("porvo")){
+	        String connectionUrl = PROTOCOL + dbName+";create=true";
+	        try {
+	            Class.forName(DRIVER);
+	            connection = DriverManager.getConnection(connectionUrl);
+	        } catch (SQLException e) {
+	            throw new RuntimeException("Could not open Derby DB at " + connectionUrl, e);
+	        } catch (ClassNotFoundException e) {
+	            throw new RuntimeException("Could not find Derby driver " + DRIVER, e);
+	        }
+    	}
+    	else{
+    		try{
+    			Class.forName(CLIENT_DRIVER);
+    			connection = DriverManager.getConnection(dbName);
+    		}catch (SQLException e) {
+	            throw new RuntimeException("Could not open Derby DB at " + dbName, e);
+	        } catch (ClassNotFoundException e) {
+	            throw new RuntimeException("Could not find Derby driver " + DRIVER, e);
+	        }
+    	}
     }
     /**
 * Closes the Derby database connection.

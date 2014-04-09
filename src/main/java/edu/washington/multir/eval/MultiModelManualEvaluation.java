@@ -69,21 +69,19 @@ public class MultiModelManualEvaluation {
 		List<String> modelPaths = CLIUtils.loadFilePaths(arguments);
 		
 		
-		String testCorpusDatabasePath = arguments.get(0);
-		//String multirModelPath = arguments.get(1);
-		String annotationsInputFilePath = arguments.get(1);
-		String evaluationRelationsFilePath = arguments.get(2);
+		String annotationsInputFilePath = arguments.get(0);
+		String evaluationRelationsFilePath = arguments.get(1);
 		
 		targetRelations = EvaluationUtils.loadTargetRelations(evaluationRelationsFilePath);
 		
 		//load test corpus
-		Corpus c = new Corpus(testCorpusDatabasePath,cis,true);
+		Corpus c = CLIUtils.loadCorpus(arguments, cis);
 		
 		//if corpus object is full corpus, we may specify to look at train or test
 		//partition of it based on a input file representing the names of the test documents
-		if(arguments.size() == 5){
-			String corpusSetting = arguments.get(3);
-			String pathToTestDocumentFile = arguments.get(4);
+		if(arguments.size() == 4){
+			String corpusSetting = arguments.get(2);
+			String pathToTestDocumentFile = arguments.get(3);
 			
 			if(!corpusSetting.equals("train") && !corpusSetting.equals("test")){
 				throw new IllegalArgumentException("This argument must be train or test");
