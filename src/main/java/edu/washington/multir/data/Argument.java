@@ -76,6 +76,17 @@ public class Argument {
 		}
 	}
 	
+	public boolean isContainedIn(Argument other){
+		
+		if(
+			((this.getStartOffset() > other.getStartOffset()) && (this.getEndOffset() <= other.getEndOffset())) ||
+			((this.getStartOffset() >= other.getStartOffset()) && (this.getEndOffset() < other.getEndOffset())) ||
+			((this.getStartOffset() > other.getStartOffset()) && (this.getEndOffset() < other.getEndOffset()))){
+			return true;
+		}
+		return false;
+	}
+	
 	@Override
 	public boolean equals(Object other){
 		Argument o = (Argument)other;

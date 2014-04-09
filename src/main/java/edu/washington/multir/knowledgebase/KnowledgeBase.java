@@ -3,6 +3,7 @@ package edu.washington.multir.knowledgebase;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ public class KnowledgeBase {
 	private Map<String,List<String>> entityMap;
 	//map from a string representation of an entity pair to a list of their relations
 	private Map<String,List<Pair<String,String>>> entityPairRelationMap;
+
 	
 	public Map<String,List<String>> getEntityMap() {return entityMap;}
 	public Map<String,List<Pair<String,String>>> getEntityPairRelationMap() {return entityPairRelationMap;}
@@ -149,7 +151,9 @@ public class KnowledgeBase {
 		
 		this.entityMap = entityMap;
 		this.entityPairRelationMap = entityPairRelationMap;
+		
 	}
+	
 	public List<String> getRelationsBetweenArgumentIds(String arg1Id,
 			String arg2Id) {
 		
@@ -232,7 +236,7 @@ public class KnowledgeBase {
 	 * @return
 	 */
 	public List<String> getTrueNegativeRelations(List<String> arg1Ids,
-			List<String> arg2Ids, String arg2Type, KnowledgeBase kB, List<String> targetRelations) {
+			List<String> arg2Ids, KnowledgeBase kB, List<String> targetRelations) {
 		
 		Set<String> trueNegativeRelations = new HashSet<String>();
 
@@ -278,6 +282,28 @@ public class KnowledgeBase {
 		return new ArrayList<>(trueNegativeRelations);
 	}
 	
+	public Map<String,List<String>> getIDToAliasMap(){
+		//map from entity id to aliases
+		Map<String,List<String>> idToAliasMap = new HashMap<>();
+		
+		for(String alias: entityMap.keySet()){
+			List<String> aliasIds = entityMap.get(alias);
+			for(String id: aliasIds){
+				if(idToAliasMap.containsKey(id)){
+					List<String> aliases = idToAliasMap.get(id);
+					aliases.add(alias);
+				}
+				else{
+					List<String> newAliasList = new ArrayList<>();
+					newAliasList.add(alias);
+					idToAliasMap.put(id, newAliasList);
+				}
+			}
+		}
+		return idToAliasMap;
+	}
+	
+	
 //	/**
 //	 * Returns all relations that arg1 participates in where the second argument
 //	 * meets the general type constraints.
@@ -304,4 +330,47 @@ public class KnowledgeBase {
 //		return filteredRelations;
 //		
 //	}
+	
+	
+	public static void main(String[] args) throws IOException{
+		KnowledgeBase kb = new KnowledgeBase("/scratch2/code/multir/distantsupervision/data/fb-rels-all.tsv.gz",
+				"/scratch2/code/multir/distantsupervision/data/fb-entities.tsv",
+				"/scratch2/code/multir-reimplementation/MultirSystem/partitionRelations.txt"
+				);
+		
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		
+		String nextLine;
+		nextLine = br.readLine();
+		while(!nextLine.equals("quit")){
+			String[] values = nextLine.split(":");
+			
+			String arg1Name = values[0];
+			String arg2Name = values[1];
+			
+			
+			
+			if(kb.entityMap.containsKey(arg1Name)){
+				if(kb.entityMap.containsKey(arg2Name)){
+					List<String> arg1Ids = kb.entityMap.get(arg1Name);
+					List<String> arg2Ids = kb.entityMap.get(arg2Name);
+					System.out.println(arg1Ids.size() + " " + arg2Ids.size());
+					for(String a1Id : arg1Ids){
+						for(String a2Id: arg2Ids){
+							System.out.println("Comparing ids " + a1Id + " and " + a2Id);
+							List<String> relations = kb.getRelationsBetweenArgumentIds(a1Id,a2Id);
+							for(String rel : relations){
+								System.out.println(rel);
+							}
+						}
+					}
+				}
+			}
+			
+			nextLine = br.readLine();
+		}
+		
+		
+		
+	}
 }
