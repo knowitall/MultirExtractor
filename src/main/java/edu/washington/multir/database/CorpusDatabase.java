@@ -37,15 +37,16 @@ public final class CorpusDatabase {
 	public static CorpusDatabase loadCorpusDatabase(String name) throws SQLException{
 		File derbyDbFile = new File(name);
 		if(derbyDbFile.exists() && derbyDbFile.isDirectory()){
-			DerbyDb db = new DerbyDb(name);
+			DerbyDb db = new DerbyDb(true,name);
 			return new CorpusDatabase(name,db);
 		}
 		else{
-			throw new IllegalArgumentException("There is no derby database directory at " + name);
+			DerbyDb db = new DerbyDb(false,name);
+			return new CorpusDatabase(name,db);
 		}
 	}
 	public static CorpusDatabase newCorpusDatabase(String name, String sentenceTableSQLSpecification, String documentTableSQLSpecification) throws SQLException{
-		DerbyDb db = new DerbyDb(name);
+		DerbyDb db = new DerbyDb(true,name);
 		deleteTable(db.connection,sentenceInformationTableName);
 		deleteTable(db.connection,documentInformationTableName);
 		createTable(db.connection,sentenceInformationTableName,sentenceTableSQLSpecification);

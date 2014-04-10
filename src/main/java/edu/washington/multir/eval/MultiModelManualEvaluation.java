@@ -69,15 +69,13 @@ public class MultiModelManualEvaluation {
 		List<String> modelPaths = CLIUtils.loadFilePaths(arguments);
 		
 		
-		String testCorpusDatabasePath = arguments.get(0);
-		//String multirModelPath = arguments.get(1);
 		String annotationsInputFilePath = arguments.get(1);
 		String evaluationRelationsFilePath = arguments.get(2);
 		
 		targetRelations = EvaluationUtils.loadTargetRelations(evaluationRelationsFilePath);
 		
 		//load test corpus
-		Corpus c = new Corpus(testCorpusDatabasePath,cis,true);
+		Corpus c = new Corpus(arguments.get(0),cis,true);
 		
 		//if corpus object is full corpus, we may specify to look at train or test
 		//partition of it based on a input file representing the names of the test documents

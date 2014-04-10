@@ -76,8 +76,6 @@ public class RunDistantSupervision {
 		SententialInstanceGeneration sig = CLIUtils.loadSententialInformationGeneration(arguments);
 		RelationMatching rm = CLIUtils.loadRelationMatching(arguments);
 		NegativeExampleCollection nec = CLIUtils.loadNegativeExampleCollection(arguments);
-		
-
 		Corpus c = new Corpus(arguments.get(0),cis,true);
 		String dsFileName = arguments.get(1);
 		KnowledgeBase kb = new KnowledgeBase(arguments.get(2),arguments.get(3),arguments.get(4));
