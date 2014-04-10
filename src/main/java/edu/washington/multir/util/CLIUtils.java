@@ -2,6 +2,7 @@ package edu.washington.multir.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import org.apache.commons.cli.ParseException;
 import edu.washington.multir.argumentidentification.ArgumentIdentification;
 import edu.washington.multir.argumentidentification.RelationMatching;
 import edu.washington.multir.argumentidentification.SententialInstanceGeneration;
+import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
 import edu.washington.multir.corpus.CustomCorpusInformationSpecification;
 import edu.washington.multir.corpus.DocumentInformationI;
@@ -24,6 +26,8 @@ import edu.washington.multir.distantsupervision.NegativeExampleCollection;
 import edu.washington.multir.featuregeneration.FeatureGenerator;
 
 public class CLIUtils {
+	
+	
 	
 	/**
 	 * Returns A CorpusInformationSpecification object using the proper 
@@ -560,6 +564,7 @@ public class CLIUtils {
 		
 		return sigList;
 	}
+	
 	
 	public static List<String> loadFilePaths(List<String> arguments, String optionName) throws ParseException {
 		Options options = new Options();

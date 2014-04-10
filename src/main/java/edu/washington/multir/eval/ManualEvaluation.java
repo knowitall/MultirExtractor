@@ -80,7 +80,6 @@ public class ManualEvaluation {
 		SententialInstanceGeneration sig = CLIUtils.loadSententialInformationGeneration(arguments);
 		
 		
-		String testCorpusDatabasePath = arguments.get(0);
 		String multirModelPath = arguments.get(1);
 		String annotationsInputFilePath = arguments.get(2);
 		String evaluationRelationsFilePath = arguments.get(3);
@@ -88,7 +87,7 @@ public class ManualEvaluation {
 		targetRelations = EvaluationUtils.loadTargetRelations(evaluationRelationsFilePath);
 		
 		//load test corpus
-		Corpus c = new Corpus(testCorpusDatabasePath,cis,true);
+		Corpus c = new Corpus(arguments.get(0),cis,true);
 		DocumentExtractor de = new DocumentExtractor(multirModelPath,fg,ai,sig);
 		
 		//if corpus object is full corpus, we may specify to look at train or test
