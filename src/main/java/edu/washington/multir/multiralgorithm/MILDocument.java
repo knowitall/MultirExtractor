@@ -1,8 +1,13 @@
 package edu.washington.multir.multiralgorithm;
 
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 
@@ -91,5 +96,46 @@ public class MILDocument {
 			dos.writeInt(Z[i]);
 			features[i].serialize(dos);
 		}
+	}
+	
+	@Override
+	public String toString(){
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(arg1);
+		sb.append("\t");
+		sb.append(arg2);
+		sb.append("\t");
+		for(Integer rel : Y){
+			sb.append(rel);
+			sb.append("|");
+		}
+		sb.setLength(sb.length()-1);
+		sb.append("\n");
+		for(int i = 0; i < numMentions; i++){
+			sb.append("Mention " + i+ " ");
+			for(int feat: features[i].ids){
+				sb.append(feat);
+				sb.append(" ");
+			}
+			sb.append("\n");
+		}
+		sb.setLength(sb.length()-1);
+
+		
+		
+		return sb.toString().trim();
+	}
+	
+	public static void main(String[] args) throws IOException{
+		
+		MILDocument d = new MILDocument();
+		DataInputStream dis = new DataInputStream(new FileInputStream(new File(args[0])));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(args[1])));
+		while(d.read(dis)){
+			bw.write(d.toString()+"\n");
+		}
+		bw.close();
+		dis.close();
 	}
 }
