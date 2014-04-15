@@ -610,4 +610,34 @@ public class CLIUtils {
 
 	}
 
+	public static Integer loadNumberOfAverages(List<String> arguments) throws ParseException {
+		Options options = new Options();
+		options.addOption("avg",true,"number of iterations to run in creating avg model");
+		
+		List<Integer> relevantArgIndices = getContiguousArgumentsForSingleValueOptions(arguments,"avg");
+		List<String> relevantArguments = new ArrayList<String>();
+		List<String> remainingArguments = new ArrayList<String>();
+		for(Integer i: relevantArgIndices){
+			relevantArguments.add(arguments.get(i));
+		}
+		for(Integer i =0; i < arguments.size(); i++){
+			if(!relevantArgIndices.contains(i)){
+				remainingArguments.add(arguments.get(i));
+			}
+		}
+		
+		CommandLineParser parser = new BasicParser();
+		CommandLine cmd = parser.parse(options, relevantArguments.toArray(new String[relevantArguments.size()]));
+
+		String avgNumberString = cmd.getOptionValue("avg");
+
+		removeUsedArguments(remainingArguments,arguments);
+		if(avgNumberString != null){
+			return Integer.parseInt(avgNumberString);
+		}
+		else{
+			return 1;
+		}		
+	}
+
 }

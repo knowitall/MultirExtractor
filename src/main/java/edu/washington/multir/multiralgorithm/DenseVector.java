@@ -18,6 +18,10 @@ public class DenseVector {
 	public double dotProduct(SparseBinaryVector v, Map<Integer,Double> featureScoreMap) {
 		return dotProduct(this, v, featureScoreMap);
 	}
+	
+	public double dotProduct(SparseBinaryVector v) {
+		return dotProduct(this, v);
+	}
 
 	public void reset() {
 		for (int i=0; i < vals.length; i++) vals[i] = 0;
@@ -28,6 +32,15 @@ public class DenseVector {
 		for (int i=0; i < v2.num; i++) {
 			double featureScore = v1.vals[v2.ids[i]];
 			featureScoreMap.put(new Integer(v2.ids[i]),new Double(featureScore));
+			sum += featureScore;
+		}
+		return sum;
+	}
+	
+	public static double dotProduct(DenseVector v1, SparseBinaryVector v2) {
+		double sum = 0;
+		for (int i=0; i < v2.num; i++) {
+			double featureScore = v1.vals[v2.ids[i]];
 			sum += featureScore;
 		}
 		return sum;

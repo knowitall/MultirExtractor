@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,13 +41,17 @@ public class Preprocess {
 	 */
 	public static void main(String[] args) 
 	throws IOException {
+            run(args[0],args[1],false);
+	}
+	
+	
+	public static void run(String featureFile, String trainDir, boolean random) throws IOException{
     	long start = System.currentTimeMillis();
     	
     	printMemoryStatistics();
 
-  
-		String trainFile = args[0];
-		String outDir = args[1];
+		String trainFile = featureFile;
+		String outDir = trainDir;
 		String mappingFile = outDir + File.separatorChar + "mapping";
 		String modelFile = outDir + File.separatorChar + "model";
 		
@@ -58,7 +63,7 @@ public class Preprocess {
 			System.out.println("PREPROCESSING TRAIN FEATURES");
 		{
 			String output1 = outDir + File.separatorChar + "train";
-			convertFeatureFileToMILDocument(trainFile, output1, mapping);
+			convertFeatureFileToMILDocument(trainFile, output1, mapping,random);
 		}
 		
 			System.out.println("FINISHED PREPROCESSING TRAIN FEATURES");
@@ -85,6 +90,7 @@ public class Preprocess {
 		
     	long end = System.currentTimeMillis();
     	System.out.println("Preprocessing took " + (end-start) + " millisseconds");
+		
 	}
 	
 
@@ -165,7 +171,7 @@ public class Preprocess {
 	 * 			  relevant relations and features
 	 * @throws IOException
 	 */
-	private static void convertFeatureFileToMILDocument(String input, String output, Mappings m) throws IOException {
+	private static void convertFeatureFileToMILDocument(String input, String output, Mappings m, boolean random) throws IOException {
 		//open input and output streams
 		DataOutputStream os = new DataOutputStream
 			(new BufferedOutputStream(new FileOutputStream(output)));
@@ -235,7 +241,15 @@ public class Preprocess {
     	
 	    //iterate over keys in the map and create MILDocuments
 	    int count =0;
-	    for(Integer intKey : relationMentionMap.keySet()){
+	    
+	    //randomize or not
+	    List<Integer> intKeys = new ArrayList<>(relationMentionMap.keySet());
+	    
+	    if(random){
+	    	Collections.shuffle(intKeys);
+	    }
+	    
+	    for(Integer intKey : intKeys){
 	    	doc.clear();
 
 	    	String[] keySplit = getStringKey(intKey).split("%");
