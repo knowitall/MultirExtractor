@@ -25,7 +25,6 @@ import edu.washington.multir.argumentidentification.SententialInstanceGeneration
 import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNEL;
 import edu.washington.multir.distantsupervision.DistantSupervision;
 import edu.washington.multir.distantsupervision.NegativeExampleCollection;
 import edu.washington.multir.knowledgebase.KnowledgeBase;

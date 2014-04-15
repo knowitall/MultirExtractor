@@ -19,6 +19,7 @@ import edu.washington.multir.argumentidentification.SententialInstanceGeneration
 import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
 import edu.washington.multir.corpus.CustomCorpusInformationSpecification;
+import edu.washington.multir.corpus.DefaultCorpusInformationSpecification;
 import edu.washington.multir.corpus.DocumentInformationI;
 import edu.washington.multir.corpus.SentInformationI;
 import edu.washington.multir.corpus.TokenInformationI;
@@ -26,8 +27,6 @@ import edu.washington.multir.distantsupervision.NegativeExampleCollection;
 import edu.washington.multir.featuregeneration.FeatureGenerator;
 
 public class CLIUtils {
-	
-	
 	
 	/**
 	 * Returns A CorpusInformationSpecification object using the proper 
@@ -63,12 +62,10 @@ public class CLIUtils {
 				remainingArguments.add(args.get(i));
 			}
 		}
-		
-		
-		
+
 		CommandLineParser parser = new BasicParser();
 		CommandLine cmd = parser.parse(options, relevantArguments.toArray(new String[relevantArguments.size()]));
-		CustomCorpusInformationSpecification cis = new CustomCorpusInformationSpecification();
+		CustomCorpusInformationSpecification cis = new DefaultCorpusInformationSpecification();
 		
 		String[] sentInformationSpecificationClasses = cmd.getOptionValues("si");
 		if(sentInformationSpecificationClasses != null){

@@ -17,7 +17,6 @@ import edu.stanford.nlp.util.Triple;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.SentDependencyInformation.DependencyAnnotation;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetBeginAnnotation;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetEndAnnotation;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNEL.SentNamedEntityLinkingInformation.NamedEntityLinkingAnnotation;
 import edu.washington.multir.corpus.SentFreebaseNotableTypeInformation.FreebaseNotableTypeAnnotation;
 import edu.washington.multir.data.Argument;
 import edu.washington.multir.data.KBArgument;

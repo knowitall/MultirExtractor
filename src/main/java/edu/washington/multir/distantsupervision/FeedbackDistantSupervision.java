@@ -34,7 +34,7 @@ import edu.washington.multir.corpus.CorpusInformationSpecification;
 import edu.washington.multir.corpus.CorpusInformationSpecification.SentGlobalIDInformation.SentGlobalID;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetBeginAnnotation;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetEndAnnotation;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNEL.SentNamedEntityLinkingInformation.NamedEntityLinkingAnnotation;
+import edu.washington.multir.corpus.SentNamedEntityLinkingInformation.NamedEntityLinkingAnnotation;
 import edu.washington.multir.data.Argument;
 import edu.washington.multir.data.KBArgument;
 import edu.washington.multir.featuregeneration.FeatureGenerator;

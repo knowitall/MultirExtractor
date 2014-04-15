@@ -9,6 +9,11 @@ import edu.stanford.nlp.util.ErasureUtils;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.Triple;
 
+/**
+ * Extra SentInformationI Class used to represent Freebase Notable Types
+ * @author jgilme1
+ *
+ */
 public class SentFreebaseNotableTypeInformation implements SentInformationI{
 
 	public static final class FreebaseNotableTypeAnnotation implements CoreAnnotation<List<Triple<Pair<Integer,Integer>,String,String>>>{

@@ -21,7 +21,6 @@ import edu.washington.multir.argumentidentification.SententialInstanceGeneration
 import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNEL;
 import edu.washington.multir.featuregeneration.DefaultFeatureGenerator;
 import edu.washington.multir.featuregeneration.FeatureGeneration;
 import edu.washington.multir.featuregeneration.FeatureGenerator;

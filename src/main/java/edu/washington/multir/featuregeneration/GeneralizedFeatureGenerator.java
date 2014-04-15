@@ -17,12 +17,16 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Pair;
 import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
+import edu.washington.multir.corpus.CustomCorpusInformationSpecification;
+import edu.washington.multir.corpus.DefaultCorpusInformationSpecification;
+import edu.washington.multir.corpus.DocCorefInformation;
+import edu.washington.multir.corpus.DocumentInformationI;
+import edu.washington.multir.corpus.SentInformationI;
+import edu.washington.multir.corpus.SentNamedEntityLinkingInformation;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetBeginAnnotation;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNELAndCoref;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetEndAnnotation;
 import edu.washington.multir.featuregeneration.FeatureGeneration.SententialArgumentPair;
 import edu.washington.multir.util.BufferedIOUtils;
-
 import edu.knowitall.tool.postag.PostaggedToken;
 import edu.knowitall.tool.chunk.ChunkedToken;
 import edu.knowitall.tool.chunk.OpenNlpChunker;
@@ -263,7 +267,14 @@ public class GeneralizedFeatureGenerator implements FeatureGenerator {
 	 * @throws FileNotFoundException 
 	 */
 	public static void main(String[] args) throws SQLException, FileNotFoundException, IOException{		
-		CorpusInformationSpecification cis = new DefaultCorpusInformationSpecificationWithNELAndCoref();
+		CustomCorpusInformationSpecification cis = new DefaultCorpusInformationSpecification();
+		List<DocumentInformationI> ldi = new ArrayList<DocumentInformationI> ();
+		List<SentInformationI> lsi = new ArrayList<SentInformationI> ();
+		ldi.add(new DocCorefInformation());
+		lsi.add(new SentNamedEntityLinkingInformation());
+
+		cis.addDocumentInformation(ldi);
+		cis.addSentenceInformation(lsi);
 		FeatureGenerator fg = new GeneralizedFeatureGenerator();
 		Corpus c = new Corpus("NELAndCorefTrain",cis,true);
 		BufferedReader in;
