@@ -31,6 +31,9 @@ public class RunMultiModelDistantSupervision {
 	 * 	    args[2] should be entityKBFielPath
 	 * 	    args[3] should be targetRelationsFilePath
 	 *      args[4] should be true / false for using the new negative example collection algorithm
+	 *      args[5] should be TypeSignatureRelationMap file
+	 *      args[6] is optional and should be test or train
+	 *      args[7] is optional and should be TestDocumentFile
 	 *      
 	 *      -ai defines ArgumentIdentification
 	 *      -siglist defines list of SententialInstanceGeneration algorithms
@@ -51,9 +54,6 @@ public class RunMultiModelDistantSupervision {
 	 * @throws NoSuchMethodException 
 	 * @throws InstantiationException 
 	 */
-
-	
-	
 	public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException, 
 	ParseException, IllegalAccessException, IllegalArgumentException, 
 	InvocationTargetException, NoSuchMethodException, SecurityException, 

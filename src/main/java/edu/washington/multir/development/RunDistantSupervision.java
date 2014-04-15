@@ -42,11 +42,20 @@ public class RunDistantSupervision {
 	 * 
 	 * @param args
 	 * 		args[0] should be name of corpus database
-	 * 		args[1] should be relationKBFilePath
-	 * 	    args[2] should be entityKBFielPath
-	 * 	    args[3] should be targetRelationsFilePath
-	 *      args[4] should be true / false for negative examples
-	 *      args[5] is optional, and is a ratio of positive to negative examples
+	 * 		args[1] should be distant supervision file
+	 * 	    args[2] should be entityKBRelationsFile
+	 * 	    args[3] should be entityKBEntityFile
+	 * 		args[4] should be targetRelationsFile
+	 *      args[5] is optional and should be either train or test
+	 *      args[6] is optional and is path to the testDocumentsFile
+	 *      -si option takes list of SentInformationI class names
+	 *      -di option takes list of DocumentInformationI class names
+	 *      -ti option takes list of TokenInformationI class names
+	 *      -ai is required and takes single argument of ArgumentIdentification class name
+	 *      -sig is required and takes single argument of SententialInstanceGeneration class name
+	 *      -rm is required and takes single argument of RelationMatching class name
+	 *      -nec is required and takes single argument of NegativeExampleCollection class name
+	 *      -ratio is required and takes single argument float for ratio of Negative to POsitive training instances
 	 * @throws SQLException
 	 * @throws IOException
 	 * @throws ClassNotFoundException 

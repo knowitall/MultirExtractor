@@ -22,20 +22,11 @@ import edu.washington.multir.corpus.SentInformationI;
 import edu.washington.multir.corpus.TokenInformationI;
 import edu.washington.multir.util.CLIUtils;
 
-/**
- * An app for taking a prespecified corpus
- * directory an inputting the information
- * into the derby db.
- * 
- * args[0] - path to the corpus information directory
- * args[1] - path 
- * @author jgilme1
- */
 
 public class LoadCorpus {
 	/**
 	 * args[0] - name of corpus database
-	 * args[1] - path to the corpus information directory
+	 * args[1] - path to the corpus information directory with raw Corpus files
 	 * args[2] - name of temporary sentence file for batch insertion into Derby DB
 	 * args[3] - name of temporary document file for batch insertion into Derby DB
 	 * args[4-...] - Use option -si to declare a list of SentInformationI class names, option -di 

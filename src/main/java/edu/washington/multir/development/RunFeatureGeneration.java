@@ -27,20 +27,18 @@ import edu.washington.multir.featuregeneration.FeatureGenerator;
 import edu.washington.multir.util.CLIUtils;
 import edu.washington.multir.util.FigerTypeUtils;
 
-/**
- * App for doing feature generation. Before this is run
- * DistantSupervision and AddNegativeExamples should have
- * been run.
- * @author jgilme1
- *
- */
 public class RunFeatureGeneration {
+	
+	
 	/**
 	 * 
 	 * @param args
-	 * 			args[0] is path to DB file
-	 * 			args[1] is path to Distant Supervision file
-	 * 			args[2] is path to output features file
+	 * 		args[0] is path to Corpus DB file
+	 *      -si option takes list of SentInformationI class names
+	 *      -di option takes list of DocumentInformationI class names
+	 *      -ti option takes list of TokenInformationI class names
+	 *      -fg is required and takes single argument of FeatureGenerator class name
+
 	 * @throws SQLException
 	 * @throws IOException
 	 * @throws ClassNotFoundException 

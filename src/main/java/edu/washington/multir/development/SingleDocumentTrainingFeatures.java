@@ -30,15 +30,19 @@ import edu.washington.multir.featuregeneration.DefaultFeatureGenerator;
 import edu.washington.multir.featuregeneration.FeatureGenerator;
 import edu.washington.multir.preprocess.CorpusPreprocessing;
 
+/**
+ * Debugging App for comparing features generated at test time
+ * vs train time
+ * @author jgilme1
+ *
+ */
 public class SingleDocumentTrainingFeatures {
 	
 	
 	private static ArgumentIdentification ai;
 	private static SententialInstanceGeneration sig;
 	private static FeatureGenerator fg;
-	
-	//
-	// args[0] is corpus DB name
+
 	public static void main(String[] args) throws SQLException, IOException, InterruptedException{
 		CorpusInformationSpecification cis = new DefaultCorpusInformationSpecification();
 		Corpus c = new Corpus(args[0],cis,true);
@@ -118,16 +122,6 @@ public class SingleDocumentTrainingFeatures {
 				doc2POS.append(" ");
 			}
 			
-//			System.out.println(doc1TokenString.toString().trim());
-//			System.out.println(doc2TokenString.toString().trim());
-//			if(doc1TokenString.toString().trim().equals(doc2TokenString.toString().trim())){
-//				System.out.println("Sentence " + i + " have equal tokens across documents");
-//			}
-//			else{
-//				System.out.println("Sentence " + i + " DO NOT HAVE tokens across documents");
-//
-//			}
-			
 			System.err.println("Sentence number" + i);
 			System.err.println(doc1s.get(CoreAnnotations.TextAnnotation.class));
 
@@ -148,15 +142,6 @@ public class SingleDocumentTrainingFeatures {
 				System.err.println(doc1NER.toString().trim());
 				System.err.println(doc2NER.toString().trim());
 			}
-//			
-//			try{
-//				assert doc1Offsets.toString().trim().equals(doc2Offsets.toString().trim()) : "Offsets are equal";
-//			}
-//			catch(java.lang.AssertionError e){
-//				System.err.println("Offsets are not equal");
-//				System.err.println(doc1Offsets.toString().trim());
-//				System.err.println(doc2Offsets.toString().trim());
-//			}
 			
 			try{
 				assert doc1POS.toString().trim().equals(doc2POS.toString().trim()) : "POS is equal";
