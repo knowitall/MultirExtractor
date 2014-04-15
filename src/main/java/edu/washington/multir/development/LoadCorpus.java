@@ -5,21 +5,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.Parser;
-
 import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
-import edu.washington.multir.corpus.CustomCorpusInformationSpecification;
-import edu.washington.multir.corpus.DocumentInformationI;
-import edu.washington.multir.corpus.SentInformationI;
-import edu.washington.multir.corpus.TokenInformationI;
 import edu.washington.multir.util.CLIUtils;
 
 
