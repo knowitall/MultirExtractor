@@ -15,6 +15,12 @@ import edu.washington.multir.data.Argument;
 import edu.washington.multir.data.KBArgument;
 import edu.washington.multir.util.FigerTypeUtils;
 
+/**
+ * Implements <code>ArgumentIdentification</code> method <code>identifyArguments</code>
+ * to return any <code>Argument</code> whose FIGER type is either PERSON or LOCATION
+ * @author jgilme1
+ *
+ */
 public class FigerPersonLocationArgumentIdentification implements
 		ArgumentIdentification {
 

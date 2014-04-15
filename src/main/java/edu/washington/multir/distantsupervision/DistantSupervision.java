@@ -18,8 +18,6 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.Triple;
 import edu.washington.multir.argumentidentification.ArgumentIdentification;
-import edu.washington.multir.argumentidentification.PersonCountryArgumentIdentification;
-import edu.washington.multir.argumentidentification.PersonCountrySententialInstanceGeneration;
 import edu.washington.multir.argumentidentification.RelationMatching;
 import edu.washington.multir.argumentidentification.SententialInstanceGeneration;
 import edu.washington.multir.corpus.Corpus;

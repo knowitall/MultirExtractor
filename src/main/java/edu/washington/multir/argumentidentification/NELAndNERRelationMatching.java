@@ -13,14 +13,17 @@ import edu.stanford.nlp.util.Triple;
 import edu.washington.multir.data.Argument;
 import edu.washington.multir.data.KBArgument;
 import edu.washington.multir.knowledgebase.KnowledgeBase;
-import edu.washington.multir.util.FigerTypeUtils;
-import edu.washington.multir.util.GuidMidConversion;
 import edu.washington.multir.util.TypeConstraintUtils;
 
+/**
+ * Implements <code>RelationMatching<code> method <code>matchRelations</code>
+ *  by handling KB relation look up for combinations of linked arguments
+ *  and unlinked arguments.
+ * @author jgilme1
+ *
+ */
 public class NELAndNERRelationMatching implements RelationMatching{
 
-
-	
 	private static NELAndNERRelationMatching instance = null;
 	
 	public static NELAndNERRelationMatching getInstance(){
@@ -48,7 +51,6 @@ public class NELAndNERRelationMatching implements RelationMatching{
 		
 		
 		Map<String,List<String>> entityMap =KB.getEntityMap();
-		Map<String,List<Pair<String,String>>> entityRelationMap =KB.getEntityPairRelationMap();
 		
 		for(Pair<Argument,Argument> sententialInstance : sententialInstances){
 			Argument arg1 = sententialInstance.first;

@@ -8,6 +8,12 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Interval;
 import edu.washington.multir.data.Argument;
 
+/**
+ * Implements <code>ArgumentIdentification</code> method <code>identifyArguments</code>
+ * to get the union of all Arguments that either have an NEL link or an NER type
+ * @author jgilme1
+ *
+ */
 public class NELAndNERArgumentIdentification implements ArgumentIdentification {
 
 	private static NELAndNERArgumentIdentification instance = null;
@@ -36,7 +42,6 @@ public class NELAndNERArgumentIdentification implements ArgumentIdentification {
 				args.add(nerArg);
 			}
 		}
-		
 		return args;
 	}
 

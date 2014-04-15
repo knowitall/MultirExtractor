@@ -22,6 +22,12 @@ import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNEL
 import edu.washington.multir.data.Argument;
 import edu.washington.multir.data.KBArgument;
 
+/**
+ * Implements <code>ArgumentIdentification</code> method <code>identifyArguments</code>
+ * to get the union of all Arguments that belong to a coref cluster or have a NEL
+ * @author jgilme1
+ *
+ */
 public class NELAndCorefArgumentIdentification implements
 		ArgumentIdentification {
 	
@@ -41,6 +47,7 @@ public class NELAndCorefArgumentIdentification implements
 		int localSentNum = getLocalSentIndex(d,s);
 		Map<Integer,CorefChain> corefChainMap = d.get(CorefCoreAnnotations.CorefChainAnnotation.class);
 		List<CorefMention> mentionsInSentence = new ArrayList<>();
+		
 		//find all coref mentions in the current sentence
 		if(corefChainMap != null){
 			for(Integer k : corefChainMap.keySet()){
@@ -72,8 +79,12 @@ public class NELAndCorefArgumentIdentification implements
 				}
 			}
 		}
+		
+		// get NEL Arguments
 		List<Argument> nelArgs = NELArgumentIdentification.getInstance().identifyArguments(d,s);
 		
+		
+		//add NEL Arguments, then Coref Arguments, using ones with links first
 		for(Argument nelArg: nelArgs){
 			if(nelArg instanceof KBArgument){
 				args.add(nelArg);
@@ -102,44 +113,18 @@ public class NELAndCorefArgumentIdentification implements
 					args.add(corefArg);
 				}
 			}
-		}
-		
-//		//first take all nelArgs then add non-intersecting coref args
-//		args.addAll(corefArgs);
-//		for(Argument nelArg: nelArgs){
-//			boolean addNelArg = true;
-//			for(Argument corefArg: corefArgs){
-//				Integer corefStart = corefArg.getStartOffset();
-//				Integer corefEnd = corefArg.getEndOffset();
-//				Integer nelArgStart = nelArg.getStartOffset();
-//				Integer nelArgEnd = nelArg.getEndOffset();
-//				Interval<Integer> corefInterval = Interval.toInterval(corefStart, corefEnd);
-//				Interval<Integer> nelInterval = Interval.toInterval(nelArgStart, nelArgEnd);
-//				if(corefInterval.intersect(nelInterval) != null){
-//					addNelArg = false;
-//				}
-//			}
-//			if(addNelArg){
-//				args.add(nelArg);
-//			}
-//		}
-		
-		//debug
-//		System.out.println("Sentence " + s.get(SentGlobalID.class) + " arguments:");
-//		for(Argument arg: args){
-//			System.out.print(arg.getArgName());
-//			if(arg instanceof KBArgument){
-//				System.out.print("\t"+ ((KBArgument)arg).getKbId());
-//			}
-//			System.out.print("\n");
-//		}
-		
-		
+		}		
 		return args;
 	}
 
-	// returns the most popular link in the coref cluster or null
-	// if there are no links in the cluster
+
+	/**
+	 * Return NEL link that is most popular among all
+	 * the mentions of a CorefChain
+	 * @param corefChain
+	 * @param doc
+	 * @return null or kb id
+	 */
 	private String getLink(CorefChain corefChain, Annotation doc) {
 		Map<String,Integer> linkCount = new HashMap<>();
 		

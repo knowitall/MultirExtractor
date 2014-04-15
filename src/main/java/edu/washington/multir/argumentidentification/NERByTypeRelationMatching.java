@@ -19,7 +19,10 @@ import edu.washington.multir.knowledgebase.KnowledgeBase;
 import edu.washington.multir.util.TypeConstraintUtils;
 
 /**
- * Default implementation of relation matching
+ * Implements <code>RelationMatching</code> method <code>matchRelations</code>
+ * to use the <code>KnowledgeBase</code> to identify candidate entity Ids
+ * for the NER Arguments. Enforces that any relations that hold must meet
+ * the type constraints of the arguments.
  * @author jgilme1
  *
  */

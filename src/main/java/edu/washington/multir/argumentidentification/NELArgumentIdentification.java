@@ -7,7 +7,6 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.Interval;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.Triple;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetBeginAnnotation;
@@ -17,8 +16,8 @@ import edu.washington.multir.data.Argument;
 import edu.washington.multir.data.KBArgument;
 
 /**
- * NELArgumentIdentification returns every token span with
- * a link as an argument and all NER-recognized arguments as well.
+ * Implements <code>ArgumentIdentification</code> method <code>identifyArguments</code>
+ * to get the all Arguments with a NEL link
  * @author jgilme1
  *
  */
@@ -40,7 +39,6 @@ public class NELArgumentIdentification implements ArgumentIdentification{
 		//first grab all the NER arguments and store are nil links
 		List<Argument> arguments = new ArrayList<>();
 		List<KBArgument> nelArguments = new ArrayList<>();
-		List<Argument> nerArguments = NERArgumentIdentification.getInstance().identifyArguments(d, s);
 		List<CoreLabel> tokens = s.get(CoreAnnotations.TokensAnnotation.class);
 
 		//then grab all the NERL arguments

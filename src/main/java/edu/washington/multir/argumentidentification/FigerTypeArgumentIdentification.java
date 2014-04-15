@@ -10,14 +10,14 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.Triple;
-import edu.washington.multir.corpus.CorpusInformationSpecification.SentGlobalIDInformation.SentGlobalID;
 import edu.washington.multir.corpus.SentFreebaseNotableTypeInformation.FreebaseNotableTypeAnnotation;
 import edu.washington.multir.data.Argument;
 import edu.washington.multir.data.KBArgument;
 import edu.washington.multir.util.FigerTypeUtils;
 
 /**
- * Used to select arguments that have a figer type.
+ * Implements <code>ArgumentIdentification</code> method <code>identifyArguments</code>
+ * to get all arguments that have a corresponding FIGER type.
  * @author jgilme1
  *
  */

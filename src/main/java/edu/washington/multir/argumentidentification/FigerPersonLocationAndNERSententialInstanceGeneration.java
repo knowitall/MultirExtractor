@@ -16,6 +16,12 @@ import edu.washington.multir.data.KBArgument;
 import edu.washington.multir.featuregeneration.DefaultFeatureGeneratorWithFIGER;
 import edu.washington.multir.util.FigerTypeUtils;
 
+/**
+ * Implements <code>SententialInstanceGeneration</code> method <code>generateSententialInstances</code>
+ * to choose argument pairs that are of the type PERSON LOCATION.
+ * @author jgilme1
+ *
+ */
 public class FigerPersonLocationAndNERSententialInstanceGeneration implements
 		SententialInstanceGeneration {
 
