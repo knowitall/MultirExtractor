@@ -460,7 +460,7 @@ public class Corpus {
 						newLine.append("\n");
 						cachedSentenceLines.add(newLine.toString());
 
-						if (linesProcessed % 500000 == 0) {
+						if (linesProcessed % 10000 == 0) {
 							System.out.println("Processed " + linesProcessed
 									+ " sentence lines");
 							StringBuilder sentenceBuilder = new StringBuilder();
@@ -468,8 +468,8 @@ public class Corpus {
 								sentenceBuilder.append(sentenceLine);
 							}
 							sentenceWriter.write(sentenceBuilder.toString());
-							cachedSentenceLines.clear();
-							cachedDocumentLines.clear();
+							cachedSentenceLines = new ArrayList<String>();
+							cachedDocumentLines = new ArrayList<String>();
 
 						}
 						linesProcessed++;
@@ -533,7 +533,7 @@ public class Corpus {
 								documentBuilder.append(docLine);
 							}
 							documentWriter.write(documentBuilder.toString());
-							cachedDocumentLines.clear();
+							cachedDocumentLines = new ArrayList<String>();
 						}
 					}
 					
