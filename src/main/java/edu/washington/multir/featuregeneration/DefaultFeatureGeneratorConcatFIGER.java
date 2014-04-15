@@ -95,7 +95,7 @@ public class DefaultFeatureGeneratorConcatFIGER implements FeatureGenerator {
 					&& 
 			   tokens.get(nelDataTrip.first.second-1).get(SentenceRelativeCharacterOffsetEndAnnotation.class).equals(endOffset)
 			   		&&
-			   	(nelDataTrip.third > .5)){
+			   	(nelDataTrip.third > .9)){
 				
 				if(nelDataTrip.third > linkScore){
 					link = nelDataTrip.second;
