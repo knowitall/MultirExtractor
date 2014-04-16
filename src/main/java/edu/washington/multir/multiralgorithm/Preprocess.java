@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import edu.stanford.nlp.util.Pair;
@@ -246,7 +247,7 @@ public class Preprocess {
 	    List<Integer> intKeys = new ArrayList<>(relationMentionMap.keySet());
 	    
 	    if(random){
-	    	Collections.shuffle(intKeys);
+	    	Collections.shuffle(intKeys, new Random(System.currentTimeMillis()));
 	    }
 	    
 	    for(Integer intKey : intKeys){

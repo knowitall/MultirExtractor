@@ -13,7 +13,7 @@ public class FullInference {
 		parse.doc = doc;
 		parse.Z = new int[doc.numMentions];
 		
-		parse.allScores = new double[doc.numMentions][params.model.numRelations];
+		//parse.allScores = new double[doc.numMentions][params.model.numRelations];
 		
 		parseScorer.setParameters(params);
 		
@@ -26,8 +26,7 @@ public class FullInference {
 		// loop over all mentions of the instance, finding the highest probability
 		// relation for each and storing it in scores..
 		for (int m = 0; m < doc.numMentions; m++) {
-			Map<Integer,Double> featureScoreMap = new HashMap<Integer,Double>();
-			Viterbi.Parse p = viterbi.parse(doc, m,featureScoreMap);
+			Viterbi.Parse p = viterbi.parse(doc, m);
 			
 			parse.Z[m] = p.state;
 			if (p.state > 0 && !binaryYs[p.state]) {
@@ -37,7 +36,7 @@ public class FullInference {
 			
 			if (p.score > scores[parse.Z[m]])
 				scores[parse.Z[m]] = p.score;
-			parse.allScores[m] = p.scores;
+			//parse.allScores[m] = p.scores;
 		}
 
 		// parse.y is an array the size of the number of relations that

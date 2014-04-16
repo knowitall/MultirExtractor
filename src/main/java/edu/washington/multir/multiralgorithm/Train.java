@@ -27,4 +27,9 @@ public class Train {
 
 		params.serialize(dir + File.separatorChar + "params");
 	}
+	
+	
+	public static void main(String [] args) throws IOException{
+		train(args[0]);
+	}
 }

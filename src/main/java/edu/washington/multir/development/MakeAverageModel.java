@@ -33,14 +33,14 @@ public class MakeAverageModel {
 	
 	
 	public static void run(List<File> randomizedModels, File modelFile) throws IOException{
-		
+			
 		String dir1 = randomizedModels.get(0).getAbsolutePath();
 		initializeMapping(dir1);
 		System.out.println("Initialized maps");
 
 		int size =0;
 		for(int i =0; i < randomizedModels.size(); i++){
-			String randomDir = randomizedModels.get(0).getAbsolutePath();
+			String randomDir = randomizedModels.get(i).getAbsolutePath();
 			collectValuesFromRandomDir(randomDir);
 			System.out.println(i+1 + " random dirs added");
 			size++;
