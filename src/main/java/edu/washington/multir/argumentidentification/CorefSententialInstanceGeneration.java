@@ -8,14 +8,13 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Interval;
 import edu.stanford.nlp.util.Pair;
-import edu.washington.multir.corpus.CorpusInformationSpecification.SentGlobalIDInformation.SentGlobalID;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetBeginAnnotation;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetEndAnnotation;
 import edu.washington.multir.data.Argument;
 
 /**
- * With Coref data just ensure that two arguments are not part
- * of the same coref cluster.
+ * Implements <code>SententialInstanceGeneration</code> method 
+ * <code>generateSententialInstances</code> that is used during
+ * <code>DistantSupervision</code> and at extraction time.
  * @author jgilme1
  *
  */
@@ -30,6 +29,9 @@ public class CorefSententialInstanceGeneration implements
 		}
 		return instance;
 	}
+	
+
+	//method only returns pairs of Arguments that belong to different Coref clusters
 	@Override
 	public List<Pair<Argument, Argument>> generateSententialInstances(
 			List<Argument> arguments, CoreMap sentence) {
@@ -55,6 +57,14 @@ public class CorefSententialInstanceGeneration implements
 		}
 		return sententialInstances;
 	}
+	
+	/**
+	 * Uses <code>CorefCoreAnnotations.CorefChainAnnotation</code> data to check 
+	 * if two arguments belong to the same coref cluster
+	 * @param p  <code>Pair</code> of <code>Argument</code>
+	 * @param sentence <code>CoreMap</code> representation of sentence, includes Coreference data
+	 * @return  true if Arguments are in different coref clusters, false otherwise
+	 */
 	private boolean areInDifferentCorefClusters(Pair<Argument, Argument> p, CoreMap sentence) {
 		List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
 		Argument arg1 = p.first;

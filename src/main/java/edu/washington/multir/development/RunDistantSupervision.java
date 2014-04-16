@@ -3,29 +3,17 @@ package edu.washington.multir.development;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import edu.washington.multir.argumentidentification.ArgumentIdentification;
-import edu.washington.multir.argumentidentification.NELArgumentIdentification;
-import edu.washington.multir.argumentidentification.NELRelationMatching;
-import edu.washington.multir.argumentidentification.NERArgumentIdentification;
-import edu.washington.multir.argumentidentification.NERRelationMatching;
-import edu.washington.multir.argumentidentification.NERSententialInstanceGeneration;
 import edu.washington.multir.argumentidentification.RelationMatching;
 import edu.washington.multir.argumentidentification.SententialInstanceGeneration;
 import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecification;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNEL;
 import edu.washington.multir.distantsupervision.DistantSupervision;
 import edu.washington.multir.distantsupervision.NegativeExampleCollection;
 import edu.washington.multir.knowledgebase.KnowledgeBase;
@@ -43,11 +31,20 @@ public class RunDistantSupervision {
 	 * 
 	 * @param args
 	 * 		args[0] should be name of corpus database
-	 * 		args[1] should be relationKBFilePath
-	 * 	    args[2] should be entityKBFielPath
-	 * 	    args[3] should be targetRelationsFilePath
-	 *      args[4] should be true / false for negative examples
-	 *      args[5] is optional, and is a ratio of positive to negative examples
+	 * 		args[1] should be distant supervision file
+	 * 	    args[2] should be entityKBRelationsFile
+	 * 	    args[3] should be entityKBEntityFile
+	 * 		args[4] should be targetRelationsFile
+	 *      args[5] is optional and should be either train or test
+	 *      args[6] is optional and is path to the testDocumentsFile
+	 *      -si option takes list of SentInformationI class names
+	 *      -di option takes list of DocumentInformationI class names
+	 *      -ti option takes list of TokenInformationI class names
+	 *      -ai is required and takes single argument of ArgumentIdentification class name
+	 *      -sig is required and takes single argument of SententialInstanceGeneration class name
+	 *      -rm is required and takes single argument of RelationMatching class name
+	 *      -nec is required and takes single argument of NegativeExampleCollection class name
+	 *      -ratio is required and takes single argument float for ratio of Negative to POsitive training instances
 	 * @throws SQLException
 	 * @throws IOException
 	 * @throws ClassNotFoundException 

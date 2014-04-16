@@ -29,7 +29,6 @@ import edu.stanford.nlp.util.Pair;
 import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
 import edu.washington.multir.corpus.CorpusInformationSpecification.SentGlobalIDInformation.SentGlobalID;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNELAndCoref;
 import edu.washington.multir.util.BufferedIOUtils;
 
 public class FeatureGeneration {

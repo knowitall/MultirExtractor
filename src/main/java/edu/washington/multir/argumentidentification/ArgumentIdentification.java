@@ -7,9 +7,9 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.washington.multir.data.Argument;
 
 /**
- * The burden to make sure that the Annotation scheme
- * defined in the corpus is compatible with the algorithm
- * implemented in ArgumentIdentification.
+ * The interface <code>ArgumentIdentification</code> must be implemented
+ * in order to run <code>DistantSupervision</code> and to extract new
+ * extractions from <code>DocumentExtractor</code>
  * @author jgilme1
  *
  */
@@ -19,7 +19,7 @@ public interface ArgumentIdentification {
 	 * 
 	 * @param d
 	 * @param s
-	 * @return
+	 * @return the list of <code>Argument</code> from the sentence.
 	 */
 	List<Argument> identifyArguments(Annotation d, CoreMap s);
 }

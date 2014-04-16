@@ -23,21 +23,31 @@ public class MakeAverageModel {
 	
 	public static void main (String[] args) throws IOException{
 		
-		String dir1 = args[0];
+		List<File> randomizedModels = new ArrayList<>();
+		
+		for(int i =0; i < (args.length-1); i++){
+			randomizedModels.add(new File(args[i]));
+		}
+		run(randomizedModels,new File(args[args.length-1]));
+	}
+	
+	
+	public static void run(List<File> randomizedModels, File modelFile) throws IOException{
+			
+		String dir1 = randomizedModels.get(0).getAbsolutePath();
 		initializeMapping(dir1);
 		System.out.println("Initialized maps");
-		
+
 		int size =0;
-		for(int i =0; i < (args.length-1); i++){
-			String randomDir = args[i];
+		for(int i =0; i < randomizedModels.size(); i++){
+			String randomDir = randomizedModels.get(i).getAbsolutePath();
 			collectValuesFromRandomDir(randomDir);
 			System.out.println(i+1 + " random dirs added");
 			size++;
 		}
 		
-		
 		//get average
-		writeNewModel(args[args.length-1],size);
+		writeNewModel(modelFile.getAbsolutePath(),size);
 		System.out.println("Wrote new model");
 	}
 

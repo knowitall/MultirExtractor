@@ -3,45 +3,30 @@ package edu.washington.multir.development;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-
-import edu.washington.multir.argumentidentification.ArgumentIdentification;
-import edu.washington.multir.argumentidentification.RelationMatching;
-import edu.washington.multir.argumentidentification.SententialInstanceGeneration;
 import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecification;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNEL;
-import edu.washington.multir.featuregeneration.DefaultFeatureGenerator;
 import edu.washington.multir.featuregeneration.FeatureGeneration;
 import edu.washington.multir.featuregeneration.FeatureGenerator;
 import edu.washington.multir.util.CLIUtils;
 import edu.washington.multir.util.FigerTypeUtils;
 
-/**
- * App for doing feature generation. Before this is run
- * DistantSupervision and AddNegativeExamples should have
- * been run.
- * @author jgilme1
- *
- */
 public class RunFeatureGeneration {
+	
+	
 	/**
 	 * 
 	 * @param args
-	 * 			args[0] is path to DB file
-	 * 			args[1] is path to Distant Supervision file
-	 * 			args[2] is path to output features file
+	 * 		args[0] is path to Corpus DB file
+	 *      -si option takes list of SentInformationI class names
+	 *      -di option takes list of DocumentInformationI class names
+	 *      -ti option takes list of TokenInformationI class names
+	 *      -fg is required and takes single argument of FeatureGenerator class name
+
 	 * @throws SQLException
 	 * @throws IOException
 	 * @throws ClassNotFoundException 

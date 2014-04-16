@@ -59,7 +59,6 @@ public class ConvertToADEPTBenchmark {
 						
 						bw.close();
 						bw1.close();
-					//	count++;
 					}
 				}
 			}

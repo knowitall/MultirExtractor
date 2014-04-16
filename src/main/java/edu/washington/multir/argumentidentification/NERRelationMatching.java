@@ -15,7 +15,9 @@ import edu.washington.multir.data.KBArgument;
 import edu.washington.multir.knowledgebase.KnowledgeBase;
 
 /**
- * Default implementation of relation matching
+ * Implements <code>RelationMatching</code> method <code>matchRelations</code>
+ * to use the <code>KnowledgeBase</code> to identify candidate entity Ids
+ * for the NER Arguments.
  * @author jgilme1
  *
  */

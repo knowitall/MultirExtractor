@@ -7,6 +7,12 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.washington.multir.data.Argument;
 
+/**
+ * Implements <code>ArgumentIdentification</code> method <code>identifyArguments</code>
+ * to get the union of all Arguments that either have a FIGER type or an NER type.
+ * @author jgilme1
+ *
+ */
 public class FigerTypeAndNERArgumentIdentification implements
 		ArgumentIdentification {
 

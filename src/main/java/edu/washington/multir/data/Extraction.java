@@ -7,6 +7,11 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import edu.stanford.nlp.util.Pair;
 
+/**
+ * Represents Extraction
+ * @author jgilme1
+ *
+ */
 public class Extraction {
 	Argument arg1;
 	Argument arg2;
@@ -54,6 +59,11 @@ public class Extraction {
 				.append(senText).toHashCode();
 	}
 	
+	/**
+	 * Load an Extraction from a String
+	 * @param s
+	 * @return
+	 */
 	public static Extraction deserialize(String s){
 		String[] values = s.split("\t");
 		if(values.length != 10){

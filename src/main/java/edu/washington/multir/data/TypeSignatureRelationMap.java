@@ -11,6 +11,12 @@ import java.util.Map;
 
 import edu.stanford.nlp.util.Pair;
 
+/**
+ * Defines a mapping from argument type signatures
+ * to candidate relations
+ * @author jgilme1
+ *
+ */
 public class TypeSignatureRelationMap {
 	
 	

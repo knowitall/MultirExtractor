@@ -2,7 +2,14 @@ package edu.washington.multir.corpus;
 
 import java.util.List;
 
-public class CustomCorpusInformationSpecification extends DefaultCorpusInformationSpecification {
+/**
+ * This class extends the basic CorpusInformationSpecification, and can add any
+ * customized sentence information, document information, or token information to 
+ * the corpus.
+ * @author jgilme1
+ *
+ */
+public class CustomCorpusInformationSpecification extends CorpusInformationSpecification {
 
 	
 	public void addSentenceInformation(List<SentInformationI> sentInformationList){

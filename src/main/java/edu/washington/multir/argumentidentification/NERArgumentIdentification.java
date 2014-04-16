@@ -11,18 +11,16 @@ import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenO
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetEndAnnotation;
 import edu.washington.multir.data.Argument;
 
+
 /**
- * NERArgumentIdentification is am implementation of the ArgumentIdentification
- * interface that uses NER tags on the Annotation sentence objects to identify
- * potential arguments and then checks to see if those strings are names
- * in the associated Knowledgebase and assigns the proper KBids to the arguments
- * from the sentence.
+ * Implements <code>ArgumentIdentification</code> method <code>identifyArguments</code>
+ * to get all Arguments with an NER type. 
  * @author jgilme1
  *
  */
-
 public class NERArgumentIdentification implements ArgumentIdentification {
 
+	//only NER Types considered
 	private static String[] relevantNERTypes = {"ORGANIZATION", "PERSON", "LOCATION"};
 	
 	private static NERArgumentIdentification instance = null;
