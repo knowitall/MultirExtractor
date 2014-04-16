@@ -19,6 +19,7 @@ import edu.washington.multir.argumentidentification.SententialInstanceGeneration
 import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
 import edu.washington.multir.corpus.CustomCorpusInformationSpecification;
+import edu.washington.multir.corpus.DefaultCorpusInformationSpecification;
 import edu.washington.multir.corpus.DocumentInformationI;
 import edu.washington.multir.corpus.SentInformationI;
 import edu.washington.multir.corpus.TokenInformationI;
@@ -26,8 +27,6 @@ import edu.washington.multir.distantsupervision.NegativeExampleCollection;
 import edu.washington.multir.featuregeneration.FeatureGenerator;
 
 public class CLIUtils {
-	
-	
 	
 	/**
 	 * Returns A CorpusInformationSpecification object using the proper 
@@ -63,12 +62,10 @@ public class CLIUtils {
 				remainingArguments.add(args.get(i));
 			}
 		}
-		
-		
-		
+
 		CommandLineParser parser = new BasicParser();
 		CommandLine cmd = parser.parse(options, relevantArguments.toArray(new String[relevantArguments.size()]));
-		CustomCorpusInformationSpecification cis = new CustomCorpusInformationSpecification();
+		CustomCorpusInformationSpecification cis = new DefaultCorpusInformationSpecification();
 		
 		String[] sentInformationSpecificationClasses = cmd.getOptionValues("si");
 		if(sentInformationSpecificationClasses != null){
@@ -611,6 +608,36 @@ public class CLIUtils {
 	public static List<String> loadOutputFilePaths(List<String> arguments) throws ParseException {
 		return loadFilePaths(arguments,"outputFiles");
 
+	}
+
+	public static Integer loadNumberOfAverages(List<String> arguments) throws ParseException {
+		Options options = new Options();
+		options.addOption("avg",true,"number of iterations to run in creating avg model");
+		
+		List<Integer> relevantArgIndices = getContiguousArgumentsForSingleValueOptions(arguments,"avg");
+		List<String> relevantArguments = new ArrayList<String>();
+		List<String> remainingArguments = new ArrayList<String>();
+		for(Integer i: relevantArgIndices){
+			relevantArguments.add(arguments.get(i));
+		}
+		for(Integer i =0; i < arguments.size(); i++){
+			if(!relevantArgIndices.contains(i)){
+				remainingArguments.add(arguments.get(i));
+			}
+		}
+		
+		CommandLineParser parser = new BasicParser();
+		CommandLine cmd = parser.parse(options, relevantArguments.toArray(new String[relevantArguments.size()]));
+
+		String avgNumberString = cmd.getOptionValue("avg");
+
+		removeUsedArguments(remainingArguments,arguments);
+		if(avgNumberString != null){
+			return Integer.parseInt(avgNumberString);
+		}
+		else{
+			return 1;
+		}		
 	}
 
 }

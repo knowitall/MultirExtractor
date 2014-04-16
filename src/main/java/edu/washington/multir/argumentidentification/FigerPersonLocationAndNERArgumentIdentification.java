@@ -10,10 +10,15 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetEndAnnotation;
 import edu.washington.multir.data.Argument;
 
+/**
+ * Implements <code>ArgumentIdentification</code> method <code>identifyArgument</code>
+ * by combining arguments that have a FIGER type of either PERSON or LOCATION or have
+ * an NER type of PERSON or LOCATION
+ * @author jgilme1
+ *
+ */
 public class FigerPersonLocationAndNERArgumentIdentification implements
 		ArgumentIdentification {
-
-	
 	private static FigerPersonLocationAndNERArgumentIdentification instance = null;
 	
 	private FigerPersonLocationAndNERArgumentIdentification(){}
@@ -38,9 +43,6 @@ public class FigerPersonLocationAndNERArgumentIdentification implements
 				}
 			}
 		}
-		
-		
-		
 		return args;
 	}
 	

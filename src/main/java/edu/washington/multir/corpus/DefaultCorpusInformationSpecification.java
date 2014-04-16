@@ -9,8 +9,14 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.ErasureUtils;
 import edu.stanford.nlp.util.Triple;
 
+/**
+ * This class extends CustomCorpusInformationSpecification and adds
+ * the necessary information for the current baseline Multir System
+ * @author jgilme1
+ *
+ */
 public class DefaultCorpusInformationSpecification extends
-		CorpusInformationSpecification {
+		CustomCorpusInformationSpecification {
 
 	//adds custom sentenceInformation and tokenInformation
 	//to the corpus representation

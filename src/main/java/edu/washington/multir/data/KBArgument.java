@@ -1,5 +1,11 @@
 package edu.washington.multir.data;
 
+/**
+ * Class that represents and Argument with
+ * a KnowledgeBase id
+ * @author jgilme1
+ *
+ */
 public class KBArgument extends Argument {
 	private String kbid;
 	

@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -18,7 +17,6 @@ import edu.washington.multir.corpus.CorpusInformationSpecification;
  */
 public final class CorpusDatabase {
 	
-	private String name;
 	private DerbyDb db;
 	private static final String sentenceInformationTableName = "SENTENCETABLE";
 	private static final String documentInformationTableName = "DOCUMENTTABLE";
@@ -28,23 +26,40 @@ public final class CorpusDatabase {
 	private List<List<Object>> cachedSentenceValues;
 	private List<List<Object>> cachedDocumentValues;
 	
-	private CorpusDatabase(String name, DerbyDb db){
-		this.name = name;
+	private CorpusDatabase(DerbyDb db){
 		this.db =db;
 		cachedSentenceValues = new ArrayList<List<Object>>();
 		cachedDocumentValues = new ArrayList<List<Object>>();
 	}
+	
+	/**
+	 * Loads Corpus Database from argument name, looks for a local file,
+	 * if it doesnt find it, it tries a remote database
+	 * @param name
+	 * @return
+	 * @throws SQLException
+	 */
 	public static CorpusDatabase loadCorpusDatabase(String name) throws SQLException{
 		File derbyDbFile = new File(name);
 		if(derbyDbFile.exists() && derbyDbFile.isDirectory()){
 			DerbyDb db = new DerbyDb(true,name);
-			return new CorpusDatabase(name,db);
+			return new CorpusDatabase(db);
 		}
 		else{
 			DerbyDb db = new DerbyDb(false,name);
-			return new CorpusDatabase(name,db);
+			return new CorpusDatabase(db);
 		}
 	}
+	
+	/**
+	 * Creates a new Derby DB representing the corpus, creates SENTENCETABLE
+	 * and DOCUMENTTABLE and sets their indices
+	 * @param name
+	 * @param sentenceTableSQLSpecification
+	 * @param documentTableSQLSpecification
+	 * @return
+	 * @throws SQLException
+	 */
 	public static CorpusDatabase newCorpusDatabase(String name, String sentenceTableSQLSpecification, String documentTableSQLSpecification) throws SQLException{
 		DerbyDb db = new DerbyDb(true,name);
 		deleteTable(db.connection,sentenceInformationTableName);
@@ -53,7 +68,7 @@ public final class CorpusDatabase {
 		createTable(db.connection,documentInformationTableName,documentTableSQLSpecification);
 		//add Document index on sentence table
 		db.connection.prepareStatement("CREATE INDEX DOCNAMEINDEX ON " + sentenceInformationTableName + " (DOCNAME)").execute();
-		return new CorpusDatabase(name,db);
+		return new CorpusDatabase(db);
 	}
 	private static void deleteTable(Connection connection, String tableName) throws SQLException{
 		try{

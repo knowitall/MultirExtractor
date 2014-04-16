@@ -2,6 +2,12 @@ package edu.washington.multir.data;
 
 import java.util.List;
 
+/**
+ * Represents a negative relation between two linked
+ * arguments for a given sentence.
+ * @author jgilme1
+ *
+ */
 public class NegativeAnnotation {
 	
 	private KBArgument arg1;

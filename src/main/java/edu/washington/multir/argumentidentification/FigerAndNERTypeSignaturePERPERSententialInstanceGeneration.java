@@ -2,6 +2,12 @@ package edu.washington.multir.argumentidentification;
 
 import edu.washington.multir.util.TypeConstraintUtils;
 
+/**
+ * Populates <code>FigerAndNERTypeSignatureSententialInsantceGeneration</code> instance
+ * with types of <code>GeneralType.PERSON</code> and <code>GeneralType.PERSON</code>
+ * @author jgilme1
+ *
+ */
 public class FigerAndNERTypeSignaturePERPERSententialInstanceGeneration extends
 FigerAndNERTypeSignatureSententialInstanceGeneration {
 	

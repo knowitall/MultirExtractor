@@ -1,36 +1,23 @@
 package edu.washington.multir.featuregeneration;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.Triple;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.SentDependencyInformation.DependencyAnnotation;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetBeginAnnotation;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetEndAnnotation;
-import edu.washington.multir.corpus.SentFreebaseNotableTypeInformation.FreebaseNotableTypeAnnotation;
-import edu.washington.multir.data.Argument;
-import edu.washington.multir.data.KBArgument;
-import edu.washington.multir.knowledgebase.KnowledgeBase;
-import edu.washington.multir.util.FigerTypeUtils;
-import edu.washington.multir.util.GuidMidConversion;
 
-public class DefaultFeatureGeneratorWithFIGER implements FeatureGenerator {
+public class DefaultFeatureGeneratorMinusDirPath implements FeatureGenerator {
 
 	@Override
 	public List<String> generateFeatures(Integer arg1StartOffset,
 			Integer arg1EndOffset, Integer arg2StartOffset,
-			Integer arg2EndOffset, String arg1ID, String arg2ID, 
-			CoreMap sentence, Annotation document) {
+			Integer arg2EndOffset, String arg1ID, String arg2ID, CoreMap sentence, Annotation document) {
 		//System.out.println("Generating features...");
 		
 		List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
@@ -49,8 +36,8 @@ public class DefaultFeatureGeneratorWithFIGER implements FeatureGenerator {
 		String[] depTypes = new String[tokens.size()];
 		
 		
-		String arg1Type = "";
-		String arg2Type = "";
+		String arg1ner = "";
+		String arg2ner = "";
 		int[] arg1Pos = new int[2];
 		int[] arg2Pos = new int[2];
 
@@ -78,7 +65,7 @@ public class DefaultFeatureGeneratorWithFIGER implements FeatureGenerator {
 			if(begOffset == arg1StartOffset){
 				String ner = token.get(CoreAnnotations.NamedEntityTagAnnotation.class);
 				if(ner != null){
-					arg1Type = ner;
+					arg1ner = ner;
 				}
 				arg1Pos[0] = i;
 			}
@@ -91,7 +78,7 @@ public class DefaultFeatureGeneratorWithFIGER implements FeatureGenerator {
 			if(begOffset == arg2StartOffset){
 				String ner = token.get(CoreAnnotations.NamedEntityTagAnnotation.class);
 				if(ner != null){
-					arg2Type = ner;
+					arg2ner = ner;
 				}
 				arg2Pos[0] = i;
 			}
@@ -147,79 +134,21 @@ public class DefaultFeatureGeneratorWithFIGER implements FeatureGenerator {
 		//return multirFeatures(tokenStrings, posTags, depParents,
 		//			depTypes, arg1Pos, arg2Pos, arg1ner, arg2ner);
 		
-//		List<Triple<Pair<Integer,Integer>,String,Float>> nelData = sentence.get(NamedEntityLinkingAnnotation.class);
-//		String arg1ID = null;
-//		String arg2ID = null;
-//		Set<String> arg1FigerTypes  = new HashSet<String>();
-//		Set<String> arg2FigerTypes = new HashSet<String>();
-//		
-//		for(Triple<Pair<Integer,Integer>,String,Float> t : nelData){
-//			Pair<Integer,Integer> p = t.first;
-//			if(p.first == arg1Pos[0] && p.second == arg1Pos[1]){
-//				if(!t.second.equals("null"))
-//				  arg1ID = t.second;
-//			}
-//			
-//			if(p.first == arg2Pos[0] && p.second == arg2Pos[1]){
-//				if(!t.second.equals("null"))
-//				arg2ID = t.second;
-//			}
+			
+		
+		
+		return originalMultirFeatures(tokenStrings, posTags, depParents, depTypes, arg1Pos, arg2Pos, arg1ner, arg2ner);
+		
+		
+//		catch(Exception e){
+//			e.printStackTrace();
+//			return new ArrayList<String>();
 //		}
-		
-		Set<String> arg1FigerTypes  = new HashSet<String>();
-		Set<String> arg2FigerTypes = new HashSet<String>();
-		
-		List<Triple<Pair<Integer,Integer>,String,String>> notableTypeData = sentence.get(FreebaseNotableTypeAnnotation.class);
-		
-		if(arg1ID != null){
-			//get figer typer
-			arg1FigerTypes = FigerTypeUtils.getFigerTypes(new KBArgument(new Argument("",arg1StartOffset,arg1EndOffset),arg1ID), notableTypeData, tokens);
-		}
-		if(arg2ID != null){
-			//get figer typer
-			arg2FigerTypes = FigerTypeUtils.getFigerTypes(new KBArgument(new Argument("",arg2StartOffset,arg2EndOffset),arg2ID), notableTypeData, tokens);
-		}
-		
-			
-		
-		//if there is a link replace arg1Type and arg2Type with their FIGER types
-		
-		
-		
-		List<String> features = new ArrayList<String> ();
-		
-		if(arg1FigerTypes.size() > 0){
-			for(String arg1FigerType: arg1FigerTypes){
-				if(arg2FigerTypes.size()>0){
-					for(String arg2FigerType: arg2FigerTypes){
-						features.addAll(originalMultirFeatures(tokenStrings, posTags, depParents, depTypes, arg1Pos, arg2Pos, arg1FigerType, arg2FigerType));
-					}
-				}
-				else{
-					features.addAll(originalMultirFeatures(tokenStrings, posTags, depParents, depTypes, arg1Pos, arg2Pos, arg1FigerType, getFIGERTypeOfNERType(arg2Type)));	
-				}
-			}
-			
-		}
-		else{
-			if(arg2FigerTypes.size()>0){
-				for(String arg2FigerType: arg2FigerTypes){
-					features.addAll(originalMultirFeatures(tokenStrings, posTags, depParents, depTypes, arg1Pos, arg2Pos, getFIGERTypeOfNERType(arg1Type), arg2FigerType));
-				}
-			}
-			else{
-				features.addAll(originalMultirFeatures(tokenStrings, posTags, depParents, depTypes, arg1Pos, arg2Pos, getFIGERTypeOfNERType(arg1Type), getFIGERTypeOfNERType(arg2Type)));	
-			}
-			
-		}
-		
-		
-		return features;
-		
-
 	}
 	
-
+	
+	
+	
 	
 	/** 
 	 * Untouched RelationECML getFeatures algorithm...
@@ -495,7 +424,7 @@ public class DefaultFeatureGeneratorWithFIGER implements FeatureGenerator {
 		for (int i=0; i < arg1dirs.size(); i++) {
 			features.add("str:" + arg1strs.get(i) + "|" + basicStr);
 			features.add("dep:" + arg1deps.get(i) + "|" + basicDep);
-			features.add("dir:" + arg1dirs.get(i) + "|" + basicDir);
+			//features.add("dir:" + arg1dirs.get(i) + "|" + basicDir);
 		}
 		
 		
@@ -503,7 +432,7 @@ public class DefaultFeatureGeneratorWithFIGER implements FeatureGenerator {
 		for (int i=0; i < arg2dirs.size(); i++) {
 			features.add("str:" + basicStr + "|" + arg2strs.get(i));
 			features.add("dep:" + basicDep + "|" + arg2deps.get(i));
-			features.add("dir:" + basicDir + "|" + arg2dirs.get(i));
+			//features.add("dir:" + basicDir + "|" + arg2dirs.get(i));
 		}
 
 		features.add("str:" + basicStr);
@@ -512,18 +441,4 @@ public class DefaultFeatureGeneratorWithFIGER implements FeatureGenerator {
 	}
 
 
-	public static String getFIGERTypeOfNERType(String nerType){
-		if(nerType.equals("PERSON")){
-			return "/person";
-		}
-		else if (nerType.equals("ORGANIZATION")){
-			return "/organization";
-		}
-		else if (nerType.equals("LOCATION")){
-			return "/location";
-		}
-		else{
-			return nerType;
-		}
-	}
 }

@@ -1,10 +1,8 @@
 package edu.washington.multir.argumentidentification;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
 
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -14,6 +12,13 @@ import edu.washington.multir.data.Argument;
 import edu.washington.multir.data.KBArgument;
 import edu.washington.multir.knowledgebase.KnowledgeBase;
 
+/**
+ * Implements <code>RelationMatching</code> method <code>matchRelations</code>
+ * to use the NEL links of arguments to do a quick check of any relations
+ * that hold between them in the <code>KnowledgeBase</code>
+ * @author jgilme1
+ *
+ */
 public class NELRelationMatching implements RelationMatching {
 
 	

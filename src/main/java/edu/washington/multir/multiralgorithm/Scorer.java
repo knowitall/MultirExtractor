@@ -16,6 +16,14 @@ public class Scorer {
 		return sum;
 	}
 	
+	// scoring on mention documents, all 2*numRelation	
+	public double scoreMentionRelation(MILDocument doc, int m, int rel) {
+		double sum = 0;
+		DenseVector p = params.relParameters[rel];
+		sum += p.dotProduct(doc.features[m]);
+		return sum;
+	}
+	
 	// need to consider additional features that are dependent on rel ...
 	public SparseBinaryVector getMentionRelationFeatures(MILDocument doc, int m, int rel) {
 		return doc.features[m];

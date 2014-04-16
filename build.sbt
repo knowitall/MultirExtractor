@@ -8,6 +8,8 @@ fork := true
 
 javaOptions in run += "-Xmx12G"
 
+javaOptions in run += "-Djava.util.Arrays.useLegacyMergeSort=true"
+
 libraryDependencies ++= Seq(
   "org.apache.commons" % "commons-io" % "1.3.2",
   "org.apache.commons" % "commons-lang3" % "3.1",

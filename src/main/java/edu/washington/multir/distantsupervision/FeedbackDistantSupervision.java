@@ -34,7 +34,7 @@ import edu.washington.multir.corpus.CorpusInformationSpecification;
 import edu.washington.multir.corpus.CorpusInformationSpecification.SentGlobalIDInformation.SentGlobalID;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetBeginAnnotation;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetEndAnnotation;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNEL.SentNamedEntityLinkingInformation.NamedEntityLinkingAnnotation;
+import edu.washington.multir.corpus.SentNamedEntityLinkingInformation.NamedEntityLinkingAnnotation;
 import edu.washington.multir.data.Argument;
 import edu.washington.multir.data.KBArgument;
 import edu.washington.multir.featuregeneration.FeatureGenerator;
@@ -51,7 +51,6 @@ public class FeedbackDistantSupervision {
 	
 	private static long newMidCount =0;
 	private static final String MID_BASE = "MID";
-	private static final long SCORE_THRESHOLD = 150000000;
 	private static Map<String,List<String>> idToAliasMap = null;
 	private static boolean print = false;
 	
@@ -77,9 +76,7 @@ public class FeedbackDistantSupervision {
 		String corpusDatabase = arguments.get(0);
 		String targetRelationPath = arguments.get(1);
 		Corpus trainCorpus = new Corpus(corpusDatabase,cis,true);		
-		Set<String> targetRelations = EvaluationUtils.loadTargetRelations(targetRelationPath);
 		KnowledgeBase kb = new KnowledgeBase(arguments.get(2),arguments.get(3),arguments.get(1));
-		Map<String,List<String>> entityMap = kb.getEntityMap();
 		
 		
 		if(arguments.size() == 6){
@@ -163,12 +160,6 @@ public class FeedbackDistantSupervision {
 									newNegativeAnnotations.add(ds);
 								}
 								
-//								// if extraction not a true negative and score greater than threshold treat as new positive.
-//								else if(extrScoreTriple.third > SCORE_THRESHOLD){
-//									
-//									System.out.println(getDSString(ds)+"\t"+extrScoreTriple.third);
-//									newAnnotations.add(ds);
-//								}
 								
 								// if extraction not a true negative and score greater than threshold treat as new positive.
 								else if (!isProbablyNegative(kb,p.first,p.second,arg1Id,arg2Id,rel,sentence)){
@@ -185,9 +176,6 @@ public class FeedbackDistantSupervision {
 			if(docCount % 1000 == 0){
 				System.out.println(docCount + " docs processed");
 			}
-//			if(docCount == 100000){
-//				break;
-//			}
 		}
 
 		FigerTypeUtils.close();

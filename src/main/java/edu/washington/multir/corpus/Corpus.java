@@ -25,7 +25,7 @@ import edu.washington.multir.database.CorpusDatabase;
 
 /**
  * The Corpus class supports a Corpus Interface abstraction
- * with data stored in a hidden Derby Db and loaded in from
+ * with data stored in an abstracted Derby Db and loaded in from
  * a specified disk format.
  * @author jgilme1
  *
@@ -41,6 +41,14 @@ public class Corpus {
 	private boolean test = false;
 	private String testDocumentName = null;
 	
+	/**
+	 * 
+	 * @param name - String to location of local Corpus Database or name of new Corpus Database,
+	 * 				 alternatively a URL for a remote DerbyDB will work as well
+	 * @param cis  
+	 * @param load  - boolean is true if loading in a target Corpus Databse, false if creating one
+	 * @throws SQLException
+	 */
 	public Corpus(String name, CorpusInformationSpecification cis, boolean load) throws SQLException{
 	  this.cis = cis;
       cd = load ? CorpusDatabase.loadCorpusDatabase(name) : CorpusDatabase.newCorpusDatabase(name,getSentenceTableSQLSpecification(), getDocumentTableSQLSpecification());
@@ -142,17 +150,15 @@ public class Corpus {
 	}
 	
 	/**
-	 * Parses some documentInformationI froma  certain document in the corpus
+	 * Parses some documentInformationI from a  certain document in the corpus
 	 * @param documentResults SQL Row
 	 * @param doc Annotation doc to be modified 
 	 * @throws SQLException 
 	 */
 	private void parseDocument(ResultSet documentResults, Annotation doc) throws SQLException {
-		int index =2;
 		for(DocumentInformationI di : cis.documentInformation){
 			String x = documentResults.getString(di.name());
 			di.read(x, doc);
-			index++;
 		}
 		return;
 	}
@@ -165,13 +171,11 @@ public class Corpus {
 	 */
     private CoreMap parseSentence(ResultSet sentenceResults) throws SQLException,IllegalArgumentException {
     	Annotation a = new Annotation("");
-    	int index =1;
     	
     	//read in all specified sentenceInformation
     	for(SentInformationI si : cis.sentenceInformation){
     		String x = sentenceResults.getString(si.name());
     		si.read(x,a);
-    		index++;
     	}
  
     	List<CoreLabel> tokens = a.get(CoreAnnotations.TokensAnnotation.class);
@@ -180,7 +184,6 @@ public class Corpus {
     	for(TokenInformationI ti: cis.tokenInformation){
     		String tokenInformation =sentenceResults.getString(ti.name());
     		ti.read(tokenInformation, tokens);
-    		index++;
     	}
     	return a;
 	}
@@ -243,8 +246,8 @@ public class Corpus {
 			}
 			else{
 				try{
-						//doing next involves doing up to a limit of nexts
-						//and doing one Derby query....
+					//doing next involves doing up to a limit of nexts
+					//and doing one Derby query....
 					return doNext();
 				}
 				catch(SQLException e){
@@ -294,6 +297,14 @@ public class Corpus {
 
 	}
 	
+	/**
+	 * Returns iterator over all documents in corpus. If boolean fields train or test
+	 * are set to positive then only a certain partition of the documents in the corpus
+	 * will be iterated over.
+	 * @return <code>Iterator</code> of <code>Annotation</code> over Documents in Corpus
+	 * @throws SQLException
+	 * @throws IOException
+	 */
     public Iterator<Annotation> getDocumentIterator() throws SQLException, IOException{
     	if(train){
     		return getTrainDocumentIterator(testDocumentName);
@@ -346,9 +357,18 @@ public class Corpus {
     	return sb.toString();
     }
     
-    //loadCorpus takes a path to a directory with the disk corpus information, and two names for the 
-    //intermediary output files for Derby batch insertion, and loads the corpus information into the Derby
-    //DB instance.
+
+    /**
+     * 
+     * @param path - File representing directory of NLP data representing Corpus,
+     * 				 Files sentences.meta and documents.meta must exist there,
+     *               in addition any class instances of <code>SentInformationI</code> <code>TokenInformationI</code>
+     *               or <code>DocumentInformationI</code> that have been specified in <code>CorpusInformationSpecification</code>
+     * @param sentenceDBFileName - String for temporary file of sentence data representation
+     * @param documentDBFileName - String for temporary file of document data representation
+     * @throws IOException
+     * @throws SQLException
+     */
 	public void loadCorpus(File path, String sentenceDBFileName,
 			String documentDBFileName) throws IOException, SQLException {
 
@@ -606,7 +626,7 @@ public class Corpus {
     }
     
     
-    //getAnnotationPairsForEachSentence is used to bulk SQL queries for sentences and document information at the same time
+    //getAnnotationPairsForEachSentence is used to run bulk SQL queries for sentences and document information at the same time
 	public Map<Integer,Pair<CoreMap,Annotation>> getAnnotationPairsForEachSentence(Set<Integer> sentIds) throws SQLException {
 		
 		if(sentIds.size() > 1000){

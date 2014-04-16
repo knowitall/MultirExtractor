@@ -9,6 +9,12 @@ import edu.stanford.nlp.util.Pair;
 import edu.washington.multir.data.Argument;
 import edu.washington.multir.data.KBArgument;
 
+/**
+ * Implements <code>SententialInstanceGeneration</code> method <code>generateSententialInstances</code>
+ * by returning all pairs of arguments where links are not the same.
+ * @author jgilme1
+ *
+ */
 public class NERSententialInstanceGeneration implements
 		SententialInstanceGeneration {
 

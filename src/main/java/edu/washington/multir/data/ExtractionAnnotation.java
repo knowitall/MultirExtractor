@@ -1,5 +1,11 @@
 package edu.washington.multir.data;
 
+/**
+ * Representation of ExtractionAnootation is 
+ * an instance of an Extractoin with a boolean label
+ * @author jgilme1
+ *
+ */
 public class ExtractionAnnotation {
 	Extraction e;
 	boolean label;
