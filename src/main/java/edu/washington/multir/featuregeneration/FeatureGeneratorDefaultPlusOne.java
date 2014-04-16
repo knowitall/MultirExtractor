@@ -19,7 +19,6 @@ import edu.stanford.nlp.util.Triple;
 import edu.washington.multir.corpus.Corpus;
 import edu.washington.multir.corpus.CorpusInformationSpecification;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetBeginAnnotation;
-import edu.washington.multir.corpus.DefaultCorpusInformationSpecificationWithNELAndCoref;
 import edu.washington.multir.corpus.DefaultCorpusInformationSpecification.TokenOffsetInformation.SentenceRelativeCharacterOffsetEndAnnotation;
 import edu.washington.multir.featuregeneration.FeatureGeneration.SententialArgumentPair;
 import edu.washington.multir.featuregeneration.FeatureGeneratorDraft3.DependencyType;
