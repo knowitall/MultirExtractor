@@ -114,7 +114,7 @@ import edu.washington.multir.util.ModelUtils;
  * @author bobgian
  *
  */
-public class CrowdsourceFilesMultirModel
+public class CrowdsourceFilesMultiModel
 {
     private static Set<String> targetRelations = null;
 
